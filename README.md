@@ -12,7 +12,7 @@ Dark, quiet, dashboard-inspired design. No database, accounts, analytics, extern
 docker compose up -d --build
 ```
 
-Open **http://localhost:8080**. Edit `config/timeline.yaml`; the page refreshes its data within 30 seconds without a rebuild or restart. The config directory is mounted read-only, so atomic saves from editors work too.
+Open **http://localhost:8080**. Edit `config/timeline.yaml`; the page refreshes its data within 30 seconds without a rebuild or restart. The timeline file is mounted read-only, so atomic saves from editors work too.
 
 ```sh
 # Validate configuration
@@ -87,7 +87,7 @@ See [configuration reference](docs/configuration.md) for the full schema. Unknow
 
 The Docker image uses one Gunicorn worker and four threads as an unprivileged user. Compose sets a read-only filesystem, 16 MiB temporary filesystem, 128 MiB memory limit, half-CPU limit and bounded logs. These are limits, not measured consumption guarantees. No background database or build service is needed.
 
-Route an HTTPS hostname from your reverse proxy to container port 8080. Provision a readable config directory and mount it at `/config:ro`. Files must be readable by UID 10001. The app expects the root of a hostname, not a URL path prefix. HTTPS enables clipboard copying; plain HTTP uses a copy dialog. Shared links use the current hostname and do not grant access by themselves.
+Route an HTTPS hostname from your reverse proxy to container port 8080. Treat `timeline.yaml` as persistent instance data: keep the live file outside the application image/release and bind-mount it at `/config/timeline.yaml` (read-only is recommended). This keeps your timeline unchanged across application updates and redeployments; the `config/timeline.yaml` included in the repository is the starter/default configuration. The mounted file must be readable by UID 10001. The app expects the root of a hostname, not a URL path prefix. HTTPS enables clipboard copying; plain HTTP uses a copy dialog. Shared links use the current hostname and do not grant access by themselves.
 
 All supported YAML content is visible to anyone who can open your instance, including notes and project links. The raw YAML is not served. There is no login, write API or provider API access; add access control at your reverse proxy if needed.
 
