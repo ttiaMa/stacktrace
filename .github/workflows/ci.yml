@@ -1,0 +1,26 @@
+name: Check
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python -m app.server --check
+      - run: node --check app/static/app.js
+      - run: docker compose config --quiet
+      - run: docker build -t stacktrace:test .
+      - name: Container smoke test
+        run: |
+          docker run -d --name smoke --read-only --tmpfs /tmp -p 8080:8080 stacktrace:test
+          for attempt in $(seq 1 20); do
+            if curl --fail http://localhost:8080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail http://localhost:8080/api/timeline
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/config/timeline.yaml)" = "404"
+          docker stop smoke

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17191a"><meta name="description" content="A personal timeline of models, harnesses and the work built with them.">
+<title>Stacktrace · AI stack journal</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+<header><a class="brand" href="/" aria-label="Stacktrace home"><span class="brand-icon">≋</span> STACKTRACE <span class="version">/ journal</span></a><div class="header-right"><span id="clock"></span><button id="share">↗ Share view</button></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow" id="author">PERSONAL AI JOURNAL</p><h1 id="title">My AI stack<span>.</span></h1><p id="description">Tools change. Keep the story.</p></div><div class="intro-mark" aria-hidden="true">[ ai ]</div></section>
+<div id="notice" role="status" hidden></div>
+<div class="workspace">
+<aside>
+<section class="panel"><div class="panel-heading"><h2>In rotation</h2><span class="live-dot" title="Active today"></span></div><p class="caption">Your stack, right now</p><div id="current"></div></section>
+<section class="panel"><h2>By the numbers</h2><div id="stats"></div></section>
+<section class="panel guide"><h2>Reading the timeline</h2><p><span class="sample model"></span> Model · the intelligence</p><p><span class="sample harness"></span> Harness · the environment</p><p class="caption">One row, one period of use.<br>Parallel rows show overlapping tools.<br>Dashed ends are still in rotation.</p></section>
+</aside>
+<div class="main-column">
+<section class="panel timeline-panel">
+<div class="panel-heading"><div><h2>Stack timeline</h2><p class="caption">A record of what you use, and when.</p></div><div class="segmented" aria-label="View"><button id="timeline-view" aria-pressed="true">Timeline</button><button id="journal-view" aria-pressed="false">Journal</button></div></div>
+<div class="toolbar"><div id="categories" class="chips" aria-label="Category filters"></div><div class="controls"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a tool or note…" aria-label="Search timeline"></label><select id="range" aria-label="Time range"><option value="all">All time</option><option value="365">Last year</option><option value="90">Last 90 days</option></select></div></div>
+<div id="results-count" class="caption"></div><div id="timeline" tabindex="0" aria-label="Scrollable timeline"></div><div id="journal" hidden></div>
+<div class="timeline-foot"><span><span class="live-dot"></span> TODAY <span id="today-label"></span></span><span>Click a period to read its story ↗</span></div>
+</section>
+<section class="panel" id="details"><div class="empty-detail"><span>↖</span><div><h2>Every switch has a story.</h2><p class="caption">Select a period to see its models, harness, notes and links.</p></div></div></section>
+</div>
+</div>
+</main>
+<footer><span>STACKTRACE <span class="muted">/ a small history of your tools</span></span><span>YAML powered · self hosted · no tracking</span></footer>
+</div>
+</body></html>
