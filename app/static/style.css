@@ -3,7 +3,7 @@
 /* Activity lanes keep the history wide; supporting information is optional. */
 .overview summary{cursor:pointer;font-size:12px;letter-spacing:.4px}
 .overview summary .caption{margin-left:16px}
-.overview-grid{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:24px;margin-top:22px}
+.overview-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;margin-top:22px}
 .overview-grid .panel{border:0;padding:0;background:transparent}
 .overview-grid #current{display:flex;flex-wrap:wrap;gap:0 20px}
 .overview-grid .current-item{min-width:130px;flex:1}
@@ -20,7 +20,7 @@
 .period-entity.harness{background:repeating-linear-gradient(135deg,transparent,transparent 4px,color-mix(in srgb,var(--entity) 12%,transparent) 4px,color-mix(in srgb,var(--entity) 12%,transparent) 7px)}
 .controls{flex-wrap:wrap}
 #details h3,.badge,.journal-item h3{overflow-wrap:anywhere}
-@media(max-width:900px){.overview-grid{grid-template-columns:1fr}.overview-grid .guide{display:block}.overview summary .caption{display:block;margin:8px 0 0}}
+@media(max-width:900px){.overview-grid{grid-template-columns:1fr}.overview summary .caption{display:block;margin:8px 0 0}}
 @media(max-width:540px){.controls .search{flex-basis:100%;max-width:none}.timeline-panel>.panel-heading{flex-wrap:wrap}}
 
 .timeline-nav{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
