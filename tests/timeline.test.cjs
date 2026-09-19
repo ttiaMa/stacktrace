@@ -23,8 +23,8 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
     document:{body:new Node(),events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
       if (!nodes[id]) {
         nodes[id]=new Node();
-        if (id==='range' || id==='zoom') {
-          const values=id==='range'?[['all','All time'],['365','Last year'],['90','Last 90 days']]:[['detail','Months'],['years','Years'],['fit','Fit history']];
+        if (id==='zoom') {
+          const values=[['detail','Months'],['years','Years'],['fit','Fit history']];
           nodes[id].options=values.map(([value,textContent])=>({value,textContent}));
         }
       }
@@ -73,8 +73,6 @@ test('short periods, uncategorized and future open periods remain selectable',()
   assert.notEqual(blocks[0].style.top,blocks[1].style.top);
   for (const block of blocks) assert.ok(parseFloat(block.style.width)>0);
   assert.match(blocks[2].attrs['aria-label'],/planned/);
-  vm.runInContext("state.range='90'; renderTimeline(filtered())",app.context);
-  assert.match(app.nodes.timeline.children[0].textContent,/No matching/);
 });
 test('default scale opens latest and preserves history across redraws and zoom',()=>{
   const app=setup([{id:'a',title:'Long history',start:'2020-01-01'}]);
@@ -206,25 +204,25 @@ test('slider, Latest and arrows share exact bounds at every timeline scale',()=>
 
 test('filter menus support keyboard selection, cancellation and outside dismissal',()=>{
   const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
-  const [trigger,list]=app.nodes['range-control'].children;
+  const [trigger,list]=app.nodes['zoom-control'].children;
   const key=key=>trigger.events.keydown({key,preventDefault(){}});
   key('Enter'); key('End');
   assert.equal(list.hidden,false);
-  assert.equal(app.nodes.range.value,'all');
+  assert.equal(app.nodes.zoom.value,'detail');
   key('Escape');
   assert.equal(list.hidden,true);
-  assert.equal(app.nodes.range.value,'all');
+  assert.equal(app.nodes.zoom.value,'detail');
   key('Enter'); key('End'); key('Enter');
   assert.equal(list.hidden,true);
-  assert.equal(app.nodes.range.value,'90');
-  assert.equal(vm.runInContext('state.range',app.context),'90');
-  assert.equal(trigger.textContent,'Last 90 days');
+  assert.equal(app.nodes.zoom.value,'fit');
+  assert.equal(vm.runInContext('state.zoom',app.context),'fit');
+  assert.equal(trigger.textContent,'Fit history');
   assert.equal(list.children[2].attrs['aria-selected'],'true');
   trigger.events.click();
   app.context.document.events.click({target:{}});
   assert.equal(list.hidden,true);
   trigger.events.click(); list.children[0].events.click();
-  assert.equal(vm.runInContext('state.range',app.context),'all');
+  assert.equal(vm.runInContext('state.zoom',app.context),'detail');
   vm.runInContext("state.view='journal';renderMain()",app.context);
   assert.equal(app.nodes['zoom-control'].hidden,true);
 });

@@ -96,7 +96,7 @@ The roles are optional, searchable labels; both models share the entry's dates, 
 - Current stack and all-time usage statistics.
 - One editable YAML file, automatic local brand icons, and lightweight self-hosting.
 
-Dates are inclusive calendar dates. Today is the server's UTC date. Future entries appear in all-time view but never count as active. Rolling windows include today and exclude future periods. Overview totals always describe the complete history. The demo spans 2023–2026 and illustrates successive periods, overlaps and two models sharing one editor period, plus [Hermes Agent](https://hermes-agent.nousresearch.com/) for chat and [Pi](https://pi.dev/) for coding. Short blocks retain a full tooltip and keyboard-accessible details; use Months scale, search or Journal to find brief experiments in a long history.
+Dates are inclusive calendar dates. Today is the server's UTC date. Future entries appear in the timeline but never count as active. Stats always describe the complete history. The demo spans 2023–2026 and illustrates successive periods, overlaps and two models sharing one editor period, plus [Hermes Agent](https://hermes-agent.nousresearch.com/) for chat and [Pi](https://pi.dev/) for coding. Short blocks retain a full tooltip and keyboard-accessible details; use Months scale, search or Journal to find brief experiments in a long history.
 
 See [configuration reference](docs/configuration.md) for the full schema. Unknown fields, broken references, duplicate IDs, invalid dates and unsupported colors are rejected.
 

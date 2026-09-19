@@ -6,7 +6,6 @@ const iso = value => new Date(value).toISOString().slice(0, 10);
 const human = value => new Intl.DateTimeFormat('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(parseDate(value));
 const params = new URLSearchParams(location.search);
 const state = {category: params.get('category') || '', query: params.get('q') || '',
-  range: ['90','365'].includes(params.get('range')) ? params.get('range') : 'all',
   zoom: ['fit','years'].includes(params.get('zoom')) ? params.get('zoom') : 'detail',
   view: params.get('view') === 'journal' ? 'journal' : 'timeline', selected: ''};
 let data;
@@ -22,7 +21,7 @@ function notice(message) { $('notice').textContent = message; $('notice').hidden
 function color(node, value) { node.style.setProperty('--entity', value); return node; }
 function updateURL() {
   const query = new URLSearchParams();
-  for (const [key, value] of Object.entries({category:state.category,q:state.query,range:state.range === 'all' ? '' : state.range,zoom:state.zoom === 'detail' ? '' : state.zoom,view:state.view === 'timeline' ? '' : state.view})) {
+  for (const [key, value] of Object.entries({category:state.category,q:state.query,zoom:state.zoom === 'detail' ? '' : state.zoom,view:state.view === 'timeline' ? '' : state.view})) {
     if (value) query.set(key, value);
   }
   history.replaceState(null, '', location.pathname + (query.size ? '?' + query : ''));
@@ -101,10 +100,7 @@ function renderCategories() {
 }
 function filtered() {
   const query = state.query.toLocaleLowerCase();
-  const cutoff = state.range === 'all' ? -Infinity : parseDate(data.today) - (Number(state.range)-1)*DAY;
-  const stop = parseDate(data.today) + DAY;
   return data.entries.filter(e => (!state.category || e.category === state.category) &&
-    (state.range === 'all' || (end(e)>cutoff && parseDate(e.start)<stop)) &&
     [e.title,e.notes,...e.tags,...entities(e).map(entityText), data.categories[e.category]?.name || ''].join(' ').toLocaleLowerCase().includes(query))
     .sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id));
 }
@@ -117,8 +113,8 @@ function renderTimeline(entries) {
   const today = parseDate(data.today);
   const first = Math.min(...entries.map(e=>parseDate(e.start)),today);
   const last = Math.max(...entries.map(end),today+DAY);
-  const start = state.range === 'all' ? first - 5*DAY : today-(Number(state.range)-1)*DAY;
-  const finish = state.range === 'all' ? last + 7*DAY : today+DAY;
+  const start = first - 5*DAY;
+  const finish = last + 7*DAY;
   const span = Math.max(DAY, finish-start);
   const position = value => Math.max(0,Math.min(100,(value-start)/span*100));
   const chart = el('div','chart');
@@ -187,7 +183,7 @@ function renderTimeline(entries) {
     row.append(label,track); chart.append(row);
   }
   container.append(chart);
-  viewport = {start,span,width:chartWidth,visible:container.clientWidth,blocks,key:[state.category,state.query,state.range].join('|')};
+  viewport = {start,span,width:chartWidth,visible:container.clientWidth,blocks,key:[state.category,state.query].join('|')};
   const max = Math.max(0, chartWidth-container.clientWidth);
   if (!previous || previous.key !== viewport.key) {
     const selected = entries.find(e=>e.id===state.selected);
@@ -236,7 +232,7 @@ function renderJournal(entries) {
 }
 function renderMain() {
   const entries = filtered();
-  $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · ${state.range==='all'?'complete history':'rolling window'}`;
+  $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · complete history`;
   $('timeline').hidden=state.view!=='timeline'; $('journal').hidden=state.view!=='journal';
   $('details').hidden=state.view==='journal';
   $('timeline-nav').hidden=state.view!=='timeline' || !entries.length;
@@ -367,9 +363,9 @@ async function refresh() {
     renderOverview(); renderCategories(); renderMain(); renderDetails();
   } catch (error) { notice(data?'Unable to refresh. Showing the last loaded timeline.':error.message); }
 }
-$('search').value=state.query; $('range').value=state.range;
+$('search').value=state.query;
 $('zoom').value=state.zoom;
-enhanceSelect('range'); enhanceSelect('zoom');
+enhanceSelect('zoom');
 $('info-toggle').addEventListener('click',()=>setInfo(infoMode!=='click','click'));
 $('info-wrap').addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setInfo(true,'hover');});
 $('info-wrap').addEventListener('pointerleave',()=>setInfo(false));
@@ -389,7 +385,6 @@ $('latest').addEventListener('click',()=>setTimelinePosition(maxTimelineScroll()
 $('zoom').addEventListener('change',event=>{state.zoom=event.target.value;updateURL();if(data)renderMain();});
 window.addEventListener('resize',()=>{if(data && state.view === 'timeline') renderMain();});
 $('search').addEventListener('input',event=>{state.query=event.target.value;updateURL();if(data)renderMain();});
-$('range').addEventListener('change',event=>{state.range=event.target.value;updateURL();if(data)renderMain();});
 for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>switchView(view));
 $('share').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
