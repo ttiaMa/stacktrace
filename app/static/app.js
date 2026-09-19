@@ -6,6 +6,7 @@ const iso = value => new Date(value).toISOString().slice(0, 10);
 const human = value => new Intl.DateTimeFormat('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(parseDate(value));
 const params = new URLSearchParams(location.search);
 const state = {category: params.get('category') || '', query: params.get('q') || '',
+  section: params.get('section') === 'stats' ? 'stats' : 'journal',
   zoom: ['fit','years'].includes(params.get('zoom')) ? params.get('zoom') : 'detail',
   view: params.get('view') === 'journal' ? 'journal' : 'timeline', selected: ''};
 let data;
@@ -21,7 +22,7 @@ function notice(message) { $('notice').textContent = message; $('notice').hidden
 function color(node, value) { node.style.setProperty('--entity', value); return node; }
 function updateURL() {
   const query = new URLSearchParams();
-  for (const [key, value] of Object.entries({category:state.category,q:state.query,zoom:state.zoom === 'detail' ? '' : state.zoom,view:state.view === 'timeline' ? '' : state.view})) {
+  for (const [key, value] of Object.entries({category:state.category,q:state.query,zoom:state.zoom === 'detail' ? '' : state.zoom,view:state.view === 'timeline' ? '' : state.view,section:state.section==='stats'?'stats':''})) {
     if (value) query.set(key, value);
   }
   history.replaceState(null, '', location.pathname + (query.size ? '?' + query : ''));
@@ -231,6 +232,11 @@ function renderJournal(entries) {
   }
 }
 function renderMain() {
+  const statsPage=state.section==='stats';
+  $('history-page').hidden=statsPage; $('stats-page').hidden=!statsPage;
+  $('journal-section').setAttribute('aria-pressed',String(!statsPage));
+  $('stats-section').setAttribute('aria-pressed',String(statsPage));
+  if (statsPage) return;
   const entries = filtered();
   $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · complete history`;
   $('timeline').hidden=state.view!=='timeline'; $('journal').hidden=state.view!=='journal';
@@ -252,6 +258,12 @@ function switchView(view) {
     renderMain();
     window.scrollTo({left,top,behavior:'instant'});
   }
+}
+function switchSection(section) {
+  if (state.section===section) return;
+  state.section=section; updateURL();
+  document.body.style.minHeight='';
+  if (data) renderMain();
 }
 function renderDetails() {
   const entry = data.entries.find(e=>e.id===state.selected);
@@ -383,9 +395,10 @@ for (const [id, direction] of [['earlier',-1],['later',1]]) $(id).addEventListen
 });
 $('latest').addEventListener('click',()=>setTimelinePosition(maxTimelineScroll()));
 $('zoom').addEventListener('change',event=>{state.zoom=event.target.value;updateURL();if(data)renderMain();});
-window.addEventListener('resize',()=>{if(data && state.view === 'timeline') renderMain();});
+window.addEventListener('resize',()=>{if(data && state.section==='journal' && state.view === 'timeline') renderMain();});
 $('search').addEventListener('input',event=>{state.query=event.target.value;updateURL();if(data)renderMain();});
 for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>switchView(view));
+for (const section of ['journal','stats']) $(section+'-section').addEventListener('click',()=>switchSection(section));
 $('share').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
   catch { window.prompt('Copy this view’s link:',location.href); }

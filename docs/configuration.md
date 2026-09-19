@@ -103,7 +103,7 @@ entries:
       Both are part of the same project workflow in the same editor.
 ```
 
-Declare `code: Code` in the categories mapping; model and harness names are written directly in the entry. The period stays one block in the Code activity, with a strip for each model and one shared harness strip. Roles also appear in details and Journal, and are searchable. Overview totals count distinct model IDs, not roles.
+Declare `code: Code` in the categories mapping; model and harness names are written directly in the entry. The period stays one block in the Code activity, with a strip for each model and one shared harness strip. Roles also appear in details and Journal, and are searchable. Stats totals count distinct model IDs, not roles.
 
 ## Navigating long histories
 
@@ -112,3 +112,5 @@ Months is the default scale: its spacing stays fixed as years are added. The tim
 ## Reading stories
 
 Journal displays each period as a complete article: category, title, dates, models and harness, notes, related link and tags. Article titles do not open another panel. The separate details panel is available only in Timeline, after selecting a period.
+
+The top navigation separates Journal (with Timeline and article views) from Stats. Stats shows active tools and totals for the complete history. Its direct link is `/?section=stats`; switching back keeps the chosen journal view, category, search and timeline scale.

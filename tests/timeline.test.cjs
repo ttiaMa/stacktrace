@@ -240,3 +240,22 @@ test('switching views restores page position when timeline layout clamps scrolli
   assert.equal(app.context.window.scrollY,191);
   assert.equal(app.nodes.details.hidden,true);
 });
+
+test('Stats has a direct route and preserves journal filters and view when returning',()=>{
+  const app=setup([{id:'a',title:'Coding',category:'code',start:'2024-01-01'},
+    {id:'b',title:'Writing',category:'chat',start:'2025-01-01'}],undefined,'?section=stats&view=journal&category=chat&q=Writing');
+  vm.runInContext('renderOverview();renderMain()',app.context);
+  assert.equal(app.nodes['stats-page'].hidden,false);
+  assert.equal(app.nodes['history-page'].hidden,true);
+  assert.equal(app.nodes.stats.children[2].children[1].textContent,'02');
+  app.nodes['journal-section'].events.click();
+  assert.equal(app.nodes['stats-page'].hidden,true);
+  assert.equal(app.nodes['history-page'].hidden,false);
+  assert.equal(app.nodes.journal.hidden,false);
+  assert.equal(app.nodes.journal.children.length,1);
+  assert.equal(vm.runInContext('state.category',app.context),'chat');
+  assert.equal(vm.runInContext('state.query',app.context),'Writing');
+  app.nodes['stats-section'].events.click();
+  assert.equal(app.nodes['stats-page'].hidden,false);
+  assert.equal(app.nodes['stats-section'].attrs['aria-pressed'],'true');
+});
