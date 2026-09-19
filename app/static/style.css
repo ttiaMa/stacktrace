@@ -88,9 +88,10 @@
 
 /* A single moving highlight makes the two display modes one control. */
 .segmented{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;width:190px;flex-shrink:0;border-radius:9px}
-.segmented::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);border:1px solid #687147;border-radius:6px;background:linear-gradient(135deg,#464d34,#303729);box-shadow:inset 0 1px 0 #ffffff0d;transition:transform .2s ease}
+.segmented::before{content:'';box-sizing:border-box;grid-area:1 / 1;pointer-events:none;border:1px solid #687147;border-radius:6px;background:linear-gradient(135deg,#464d34,#303729);box-shadow:inset 0 1px 0 #ffffff0d;transition:transform .2s ease}
+.segmented #timeline-view{grid-column:1}.segmented #journal-view{grid-column:2}
 .segmented[data-view=journal]::before{transform:translateX(100%)}
-.segmented button{position:relative;z-index:1;min-height:34px;font-size:12px;padding:8px 12px;color:var(--muted);border-radius:6px}
+.segmented button{grid-row:1;position:relative;z-index:1;min-height:34px;font-size:12px;padding:8px 12px;color:var(--muted);border-radius:6px}
 .segmented button[aria-pressed=true]{background:transparent;border-color:transparent;color:var(--text)}
 .segmented button:hover{color:var(--text);border-color:transparent}
 @media(prefers-reduced-motion:reduce){.segmented::before{transition:none}}
