@@ -143,3 +143,14 @@ test('Journal and selected details include the same story, project link and tags
     assert.deepEqual(target.children.at(-1).children.map(n=>n.textContent),['#project','#review']);
   }
 });
+
+test('Journal is a complete reading view without clickable titles or a duplicate detail panel',()=>{
+  const app=setup([{id:'a',title:'Story',category:'code',start:'2026-01-01'}]);
+  vm.runInContext("state.view='journal'; renderMain()",app.context);
+  assert.equal(app.nodes.details.hidden,true);
+  assert.equal(app.nodes.journal.hidden,false);
+  const heading=app.nodes.journal.children[0].children.find(n=>n.textContent==='Story');
+  assert.equal(heading.events.click,undefined);
+  vm.runInContext("state.view='timeline'; renderMain()",app.context);
+  assert.equal(app.nodes.details.hidden,false);
+});

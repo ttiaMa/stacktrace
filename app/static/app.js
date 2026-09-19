@@ -218,8 +218,8 @@ function renderJournal(entries) {
   $('journal').replaceChildren();
   if (!entries.length) $('journal').append(el('p','empty','No matching periods.'));
   for (const entry of [...entries].reverse()) {
-    const item = el('article','journal-item'); const button=el('button','',entry.title); button.addEventListener('click',()=>choose(entry));
-    item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('div','period-date',rangeText(entry)),button,badges(entry));
+    const item = el('article','journal-item');
+    item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('div','period-date',rangeText(entry)),el('h3','',entry.title),badges(entry));
     appendStory(item,entry);
     $('journal').append(item);
   }
@@ -228,6 +228,7 @@ function renderMain() {
   const entries = filtered();
   $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · ${state.range==='all'?'complete history':'rolling window'}`;
   $('timeline').hidden=state.view!=='timeline'; $('journal').hidden=state.view!=='journal';
+  $('details').hidden=state.view==='journal';
   $('timeline-nav').hidden=state.view!=='timeline' || !entries.length;
   $('zoom').hidden=state.view!=='timeline';
   $('timeline-view').setAttribute('aria-pressed',String(state.view==='timeline'));

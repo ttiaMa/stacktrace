@@ -106,3 +106,7 @@ Declare `code: Code` in the categories mapping; model and harness names are writ
 ## Navigating long histories
 
 Months is the default scale: its spacing stays fixed as years are added. The timeline initially opens at the latest end with no period selected, including when an older link contains an entry parameter. Selection is temporary: click a block to open its story, or empty timeline space to deselect it. The slider, arrows, horizontal scrolling and Latest button navigate the history. Zooming preserves the visible time or keeps the latest edge when already there. There is no automatic polling: YAML changes and the current date are loaded only when you open or reload the page. Changing filters resets to the latest matching history (or the selected matching period). Years is a compact scale; Fit history intentionally compresses the entire history and may shorten labels. Full text is always available in details and Journal.
+
+## Reading stories
+
+Journal displays each period as a complete article: category, title, dates, models and harness, notes, related link and tags. Article titles do not open another panel. The separate details panel is available only in Timeline, after selecting a period.
