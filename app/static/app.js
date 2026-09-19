@@ -71,7 +71,7 @@ function badges(entry) {
   }
   return wrapper;
 }
-function rangeText(entry) { return `${human(entry.start)} — ${entry.end ? human(entry.end) : entry.start > data.today ? 'planned · open end' : 'present'}`; }
+function rangeText(entry) { return `${human(entry.start)} - ${entry.end ? human(entry.end) : entry.start > data.today ? 'planned · open end' : 'present'}`; }
 function renderOverview() {
   const current = $('current'); current.replaceChildren();
   const seen = new Set();
@@ -165,7 +165,7 @@ function renderTimeline(entries) {
       blocks.push({node:block,left:left/100*(chartWidth-150),right:(left+width)/100*(chartWidth-150)});
       block.setAttribute('aria-pressed', String(entry.id === state.selected));
       const description = `${entry.title}. ${entities(entry).map(entity=>entity.kind+' '+entityText(entity)).join('; ')}. ${rangeText(entry)}`;
-      block.title = description; block.setAttribute('aria-label', description);
+      block.title = rangeText(entry); block.setAttribute('aria-label', description);
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
         const strip = color(el('span','period-entity '+entity.kind),entity.color);
