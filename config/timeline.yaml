@@ -21,7 +21,7 @@ entries:
     title: Small scripts, one conversation at a time
     start: 2023-04-01
     end: 2023-12-15
-    model: GPT
+    model: GPT-4
     harness: ChatGPT
     category: code
     notes: |
@@ -36,7 +36,7 @@ entries:
     title: A notebook for rough ideas
     start: 2023-06-10
     end: 2025-12-31
-    model: GPT
+    model: GPT-4
     harness: ChatGPT
     category: chat
     notes: |
@@ -48,7 +48,7 @@ entries:
     title: Comparing technical approaches
     start: 2024-06-01
     end: 2025-10-31
-    model: Gemini
+    model: Gemini 1.5 Pro
     harness: AI Studio
     category: research
     notes: |
@@ -61,7 +61,7 @@ entries:
     title: An offline search prototype
     start: 2024-09-01
     end: 2024-11-30
-    model: Local model
+    model: Llama 3.1 8B
     harness: Ollama
     category: experiments
     notes: |
@@ -71,9 +71,9 @@ entries:
 
   - id: editor-first
     title: The editor-first workflow
-    start: 2024-01-05
+    start: 2024-03-05
     end: 2025-04-18
-    model: Claude Sonnet
+    model: Claude 3 Sonnet
     harness: Cursor
     category: code
     notes: |
@@ -85,7 +85,7 @@ entries:
     title: A thinking partner
     start: 2026-01-20
     end: 2026-07-31
-    model: GPT
+    model: GPT Sol 5.6
     harness: ChatGPT
     category: chat
     notes: Architecture discussions, writing and a second opinion before implementation.
@@ -95,7 +95,7 @@ entries:
     title: Moving into the terminal
     start: 2025-03-10
     end: 2026-07-04
-    model: Claude Sonnet
+    model: Claude 3.7 Sonnet
     harness: Claude Code
     category: code
     notes: |
@@ -106,7 +106,7 @@ entries:
   - id: deeper-research
     title: A second lens on research
     start: 2026-04-02
-    model: Gemini
+    model: Gemini 2.5 Pro
     harness: AI Studio
     category: research
     notes: Reading technical material and comparing approaches before committing to one.
@@ -116,7 +116,7 @@ entries:
     title: Local weekend experiments
     start: 2026-05-15
     end: 2026-06-21
-    model: Local model
+    model: Qwen 3 8B
     harness: Ollama
     category: experiments
     notes: Exploring what works offline on the hardware already on my desk.
@@ -127,9 +127,9 @@ entries:
     start: 2026-06-12
     # Both models share this harness, period and story.
     models:
-      - model: GPT
+      - model: GPT Sol 5.6
         role: Light coding
-      - model: Claude Sonnet
+      - model: Claude Opus 5
         role: Heavy coding
     harness: Cursor
     category: code
@@ -152,7 +152,7 @@ entries:
   - id: hermes-conversations
     title: A continuing conversation with Hermes
     start: 2026-08-01
-    model: GPT
+    model: GPT Sol 5.6
     harness: Hermes Agent
     category: chat
     notes: |
@@ -165,7 +165,7 @@ entries:
   - id: pi-coding
     title: A smaller coding harness to make my own
     start: 2026-08-15
-    model: Claude Sonnet
+    model: Claude Opus 5
     harness: Pi
     category: code
     notes: |
