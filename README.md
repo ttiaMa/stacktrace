@@ -1,6 +1,8 @@
 # [ stacktrace ]
 
-A small, self-hosted journal of your AI stack. One YAML file becomes a shareable timeline of the models and harnesses you use, grouped into activity rows across years of overlapping workflows.
+A self-hosted journal of your AI stack: the models you used, the tools around them, and the work you made together.
+
+Every period can be a small blog post, with a title, a longer story, tags and a link to a project or further reading. Write about an experiment, explain a switch, or document how a tool helped you build something. Browse those stories in the Journal, or explore when they happened on a timeline grouped by activity. One YAML file holds it all.
 
 Dark, quiet, dashboard-inspired design. No database, accounts, analytics, external fonts, CDNs, frontend framework or Node build step. Python serves a read-only API and local HTML/CSS/JavaScript; the browser draws the timeline.
 
