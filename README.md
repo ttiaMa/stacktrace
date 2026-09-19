@@ -100,6 +100,8 @@ Dates are inclusive calendar dates. Today is the server's UTC date. Future entri
 
 See [configuration reference](docs/configuration.md) for the full schema. Unknown fields, broken references, duplicate IDs, invalid dates and unsupported colors are rejected.
 
+The info button next to Share shows the instance's application version and a short timeline guide. The application version is separate from the YAML schema `version: 1`.
+
 ## Hosting and resources
 
 The Docker image uses one Gunicorn worker and four threads as an unprivileged user. Compose sets a read-only filesystem, 16 MiB temporary filesystem, 128 MiB memory limit, half-CPU limit and bounded logs. These are limits, not measured consumption guarantees. No background database or build service is needed.

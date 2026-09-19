@@ -15,7 +15,7 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
   const nodes = {};
   const context = vm.createContext({URLSearchParams, Intl, Date, Math, Set,
     location:{search,pathname:'/'}, history:{replaceState(){}}, window:{addEventListener(){}},
-    document:{getElementById:id=>nodes[id] ||= new Node(),createElement:()=>new Node(),createTextNode:text=>text,querySelectorAll:()=>{
+    document:{events:{},addEventListener(type,handler){this.events[type]=handler;},getElementById:id=>nodes[id] ||= new Node(),createElement:()=>new Node(),createTextNode:text=>text,querySelectorAll:()=>{
       const visit=node=>[...(node.className?.startsWith('period-block')?[node]:[]),...(node.children || []).flatMap(visit)];
       return visit(nodes.timeline);
     }},
@@ -153,4 +153,17 @@ test('Journal is a complete reading view without clickable titles or a duplicate
   assert.equal(heading.events.click,undefined);
   vm.runInContext("state.view='timeline'; renderMain()",app.context);
   assert.equal(app.nodes.details.hidden,false);
+});
+
+test('instance info supports pointer dismissal and Escape',()=>{
+  const app=setup([]);
+  app.nodes['info-wrap'].events.pointerenter({pointerType:'mouse'});
+  assert.equal(app.nodes['app-info'].hidden,false);
+  assert.equal(app.nodes['info-toggle'].attrs['aria-expanded'],'true');
+  app.nodes['info-wrap'].events.pointerleave();
+  assert.equal(app.nodes['app-info'].hidden,true);
+  app.nodes['info-toggle'].events.click();
+  assert.equal(app.nodes['app-info'].hidden,false);
+  app.context.document.events.keydown({key:'Escape'});
+  assert.equal(app.nodes['app-info'].hidden,true);
 });

@@ -260,6 +260,12 @@ function renderProfile() {
   link.hidden=!data.site.github;
   link.href=data.site.github || '';
 }
+let infoMode='';
+function setInfo(open,mode='') {
+  $('app-info').hidden=!open;
+  $('info-toggle').setAttribute('aria-expanded',String(open));
+  infoMode=open?mode:'';
+}
 async function refresh() {
   try {
     const response=await fetch('/api/timeline',{cache:'no-store'});
@@ -272,12 +278,20 @@ async function refresh() {
     document.title=data.site.title+' · Stacktrace'; $('title').textContent=data.site.title;
     $('description').textContent=data.site.description; $('author').textContent=data.site.author+' / AI JOURNAL';
     renderProfile();
+    $('app-version').textContent=data.app_version || 'development';
     $('today-label').textContent=human(data.today).toUpperCase();
     renderOverview(); renderCategories(); renderMain(); renderDetails();
   } catch (error) { notice(data?'Unable to refresh. Showing the last loaded timeline.':error.message); }
 }
 $('search').value=state.query; $('range').value=state.range;
 $('zoom').value=state.zoom;
+$('info-toggle').addEventListener('click',()=>setInfo(infoMode!=='click','click'));
+$('info-wrap').addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setInfo(true,'hover');});
+$('info-wrap').addEventListener('pointerleave',()=>setInfo(false));
+$('info-wrap').addEventListener('focusin',()=>{if(!infoMode)setInfo(true,'focus');});
+$('info-wrap').addEventListener('focusout',event=>{if(!$('info-wrap').contains(event.relatedTarget))setInfo(false);});
+document.addEventListener('click',event=>{if(!$('info-wrap').contains(event.target))setInfo(false);});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')setInfo(false);});
 $('timeline').addEventListener('click',event=>{
   if (data && state.selected && !event.target.closest('.period-block')) choose(null);
 });

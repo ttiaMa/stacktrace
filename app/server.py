@@ -7,6 +7,7 @@ import os
 import threading
 from pathlib import Path
 from app.config import load
+from app import __version__
 
 STATIC = Path(__file__).parent / 'static'
 CONFIG = Path(os.environ.get('STACKTRACE_CONFIG', 'config/timeline.yaml'))
@@ -32,7 +33,7 @@ def snapshot():
                 last_error = str(error)
         if last_good is None:
             return {'error': 'Configuration unavailable. Check server logs.'}, False
-        return dict(last_good, stale=last_error is not None,
+        return dict(last_good, stale=last_error is not None, app_version=__version__,
                     today=dt.datetime.now(dt.timezone.utc).date().isoformat()), last_error is None
 
 
