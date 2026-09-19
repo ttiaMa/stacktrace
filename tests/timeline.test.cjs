@@ -182,24 +182,24 @@ test('instance info supports pointer dismissal and Escape',()=>{
   assert.equal(app.nodes['app-info'].hidden,true);
 });
 
-test('slider, Latest and arrows share exact bounds at every timeline scale',()=>{
+test('today navigation and arrows respect exact bounds at every timeline scale',()=>{
   const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
   for (const zoom of ['detail','years','fit']) {
     vm.runInContext(`state.zoom='${zoom}'; renderTimeline(filtered())`,app.context);
     assert.equal(Number.isInteger(parseFloat(app.nodes.timeline.children[0].style.width)),true);
-    app.nodes['timeline-position'].events.input({target:{value:'1000'}});
+    vm.runInContext('setTimelinePosition(maxTimelineScroll())',app.context);
     const position=app.nodes.timeline.scrollLeft, dates=app.nodes['visible-dates'].textContent;
     assert.match(dates,/25 Sept 2026$/);
-    app.nodes.latest.events.click();
+    app.nodes['go-today'].events.click();
     assert.equal(app.nodes.timeline.scrollLeft,position);
     assert.equal(app.nodes['visible-dates'].textContent,dates);
     app.nodes.later.events.click();
     assert.equal(app.nodes.timeline.scrollLeft,position);
     assert.equal(app.nodes['visible-dates'].textContent,dates);
-    app.nodes['timeline-position'].events.input({target:{value:'0'}});
+    vm.runInContext('setTimelinePosition(0)',app.context);
     app.nodes.earlier.events.click();
     assert.equal(app.nodes.timeline.scrollLeft,0);
-    app.nodes.latest.events.click();
+    app.nodes['go-today'].events.click();
     assert.equal(app.nodes.timeline.scrollLeft,position);
   }
 });
@@ -227,6 +227,27 @@ test('filter menus support keyboard selection, cancellation and outside dismissa
   assert.equal(vm.runInContext('state.zoom',app.context),'detail');
   vm.runInContext("state.view='journal';renderMain()",app.context);
   assert.equal(app.nodes['zoom-control'].hidden,true);
+});
+
+test('Go to today centers the current date even when later periods are planned',()=>{
+  const app=setup([{id:'old',title:'History',start:'2020-01-01',end:'2025-01-01'},
+    {id:'future',title:'Planned work',start:'2028-01-01',end:'2030-01-01'}]);
+  for (const zoom of ['detail','years','fit']) {
+    vm.runInContext(`state.zoom='${zoom}';renderTimeline(filtered())`,app.context);
+    app.nodes['go-today'].events.click();
+    const {today,left,right,max}=vm.runInContext(`({
+      today:(parseDate(data.today)-viewport.start)/viewport.span*(viewport.width-150),
+      left:$('timeline').scrollLeft,
+      right:$('timeline').scrollLeft+$('timeline').clientWidth-150,
+      max:maxTimelineScroll()
+    })`,app.context);
+    assert.ok(today>=left && today<=right);
+    if (max>0) assert.ok(Math.abs(today-(left+right)/2)<.001);
+    assert.equal(app.nodes.earlier.disabled,left===0);
+    assert.equal(app.nodes.later.disabled,left===max);
+  }
+  const empty=setup([]);
+  assert.doesNotThrow(()=>empty.nodes['go-today'].events.click());
 });
 
 test('switching views restores page position when timeline layout clamps scrolling',()=>{

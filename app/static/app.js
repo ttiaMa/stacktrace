@@ -205,16 +205,21 @@ function setTimelinePosition(position) {
   $('timeline').scrollLeft=Math.max(0,Math.min(maxTimelineScroll(),position));
   syncNavigation();
 }
+function goToToday() {
+  if (!viewport) return;
+  const todayPosition=(parseDate(data.today)-viewport.start)/viewport.span*(viewport.width-150);
+  setTimelinePosition(todayPosition-($('timeline').clientWidth-150)/2);
+}
 function syncNavigation() {
   if (!viewport) return;
   const container = $('timeline'), max = maxTimelineScroll();
-  const slider = $('timeline-position');
-  slider.max = '1000'; slider.value = String(max ? Math.round(container.scrollLeft/max*1000) : 0); slider.disabled = max === 0;
+  $('earlier').disabled=container.scrollLeft<=0;
+  $('later').disabled=container.scrollLeft>=max;
   const left = viewport.start+container.scrollLeft/(viewport.width-150)*viewport.span;
   const right = container.scrollLeft >= max ? viewport.start+viewport.span : Math.min(viewport.start+viewport.span,left+(container.clientWidth-150)/(viewport.width-150)*viewport.span);
   // The right boundary is exclusive, just like period end positions.
   const text = human(iso(left))+' - '+human(iso(right-1));
-  $('visible-dates').textContent = text; slider.setAttribute('aria-valuetext',text);
+  $('visible-dates').textContent = text;
   for (const block of viewport.blocks) {
     const available = Math.min(block.right,container.scrollLeft+container.clientWidth-150)-Math.max(block.left,container.scrollLeft)-16;
     block.node.style.setProperty('--visible-label-width',Math.max(0,available)+'px');
@@ -404,11 +409,10 @@ $('timeline').addEventListener('click',event=>{
   if (data && state.selected && !event.target.closest('.period-block')) choose(null);
 });
 $('timeline').addEventListener('scroll',syncNavigation);
-$('timeline-position').addEventListener('input',event=>setTimelinePosition(Number(event.target.value)/1000*maxTimelineScroll()));
 for (const [id, direction] of [['earlier',-1],['later',1]]) $(id).addEventListener('click',()=>{
   const container=$('timeline'); setTimelinePosition(container.scrollLeft+direction*Math.max(150,container.clientWidth-150)*.8);
 });
-$('latest').addEventListener('click',()=>setTimelinePosition(maxTimelineScroll()));
+$('go-today').addEventListener('click',goToToday);
 $('zoom').addEventListener('change',event=>updateHistory({zoom:event.target.value}));
 window.addEventListener('resize',()=>{if(data && state.section==='journal' && state.view === 'timeline') renderMain();});
 $('search').addEventListener('input',event=>updateHistory({query:event.target.value}));
