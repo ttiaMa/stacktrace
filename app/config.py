@@ -3,6 +3,7 @@ import datetime as dt
 import hashlib
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 import yaml
 
 PALETTE = ['#b5b986', '#b49ace', '#85b5ae', '#d9ac80', '#90aac8', '#cd929e']
@@ -60,11 +61,21 @@ def date(value, path):
 def normalize(raw):
     raw = obj(raw, 'root', {'version', 'site', 'models', 'harnesses', 'categories', 'entries'})
     check(type(raw.get('version')) is int and raw['version'] == 1, 'version must be 1')
-    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author'})
+    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author', 'github'})
+    github = string(site.get('github'), 'site.github', '')
+    if github:
+        try:
+            parsed = urlsplit(github)
+            valid = (parsed.scheme == 'https' and parsed.hostname in ('github.com', 'www.github.com')
+                     and not parsed.username and not parsed.password and parsed.port in (None, 443)
+                     and bool(parsed.path.strip('/')) and not any(c.isspace() for c in github))
+        except ValueError:
+            valid = False
+        check(valid, 'site.github: use an HTTPS GitHub profile or repository URL')
     result = {'version': 1, 'site': {
         'title': string(site.get('title'), 'site.title', 'My AI stack'),
         'description': string(site.get('description'), 'site.description', 'Tools change. Keep the story.'),
-        'author': string(site.get('author'), 'site.author', 'Stack journal')}, 'entries': []}
+        'author': string(site.get('author'), 'site.author', 'Stack journal'), 'github': github}, 'entries': []}
     for kind in ['models', 'harnesses', 'categories']:
         catalog = raw.get(kind, {})
         check(isinstance(catalog, dict) and len(catalog) <= 500, f'{kind}: expected a mapping, max 500 items')

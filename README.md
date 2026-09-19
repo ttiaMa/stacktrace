@@ -41,6 +41,7 @@ site:
   title: My AI stack
   description: What I use, what I tried, and why I switched.
   author: Your name
+  # github: https://github.com/your-username  # Optional button beside the title.
 categories:
   code: Code
   chat: Chat

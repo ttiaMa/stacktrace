@@ -255,6 +255,11 @@ function appendStory(target,entry) {
   if (entry.url) { const link=el('a','','Related project ↗'); link.href=entry.url; link.target='_blank'; link.rel='noopener noreferrer'; target.append(link); }
   const tags=el('div'); for (const tag of entry.tags) tags.append(el('span','tag','#'+tag)); target.append(tags);
 }
+function renderProfile() {
+  const link=$('profile-link');
+  link.hidden=!data.site.github;
+  link.href=data.site.github || '';
+}
 async function refresh() {
   try {
     const response=await fetch('/api/timeline',{cache:'no-store'});
@@ -266,6 +271,7 @@ async function refresh() {
     if (state.category && !data.categories[state.category]) {state.category='';updateURL();}
     document.title=data.site.title+' · Stacktrace'; $('title').textContent=data.site.title;
     $('description').textContent=data.site.description; $('author').textContent=data.site.author+' / AI JOURNAL';
+    renderProfile();
     $('today-label').textContent=human(data.today).toUpperCase();
     renderOverview(); renderCategories(); renderMain(); renderDetails();
   } catch (error) { notice(data?'Unable to refresh. Showing the last loaded timeline.':error.message); }

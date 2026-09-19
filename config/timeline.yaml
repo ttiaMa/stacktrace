@@ -5,6 +5,7 @@ site:
   title: My evolving AI stack
   description: A personal record of the models, tools and experiments behind the work.
   author: Your name
+  github: https://github.com/ttiaMa
 
 # Each category becomes one timeline row, in this order.
 # Reuse its ID across entries: overlaps stay inside the same activity row.

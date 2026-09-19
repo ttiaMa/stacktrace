@@ -24,6 +24,13 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(result['entries'][0]['model'], result['entries'][1]['models'][0]['model'])
         self.assertEqual(result['categories']['code']['name'], 'Code')
         self.assertEqual(next(iter(result['harnesses'].values()))['name'], 'Pi')
+    def test_optional_github_profile(self):
+        self.assertEqual(normalize(self.base)['site']['github'], '')
+        self.base['site'] = {'github':'https://github.com/ttiaMa'}
+        self.assertEqual(normalize(self.base)['site']['github'], 'https://github.com/ttiaMa')
+        for url in ['javascript:alert(1)', 'https://github.com.evil.test/user', 'https://user@github.com/name', 'https://github.com:bad/name']:
+            self.base['site']['github'] = url
+            with self.assertRaises(ConfigError): normalize(self.base)
     def test_harness_only_and_overlap(self):
         self.base['entries'].append({'id':'two','title':'Harness only','start':'2026-01-01','harness':'h'})
         self.assertEqual(len(normalize(self.base)['entries']),2)
