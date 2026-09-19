@@ -41,7 +41,7 @@ Provider defaults: `openai` → `#85b5ae`, `anthropic` → `#d9ac80`, `google` �
 | `web` | ◎ | `experiment` | ⚗ |
 | `production` | ◆ | `archive` | ▤ |
 
-Adoption stages can be custom categories: experimental, production, retired, etc. Release generations can be part of a model's name or tags. No lifecycle is imposed. Icons use local system fonts and may vary by device; they are not downloaded logos.
+Adoption stages can be custom categories: experimental, production, retired, etc. Release generations can be part of a model's name or tags. No lifecycle is imposed. Category symbols use local system fonts. Model and harness logos are matched by name to bundled Lobe SVGs; unknown names or missing assets use a character fallback. Legacy model/harness icon fields remain accepted, but automatic name matching controls the rendered logo.
 
 ## Entries
 
@@ -68,19 +68,19 @@ entries:
   - id: editor
     title: Editor as my main environment
     start: 2026-01-01
-    harness: my-editor
+    harness: Cursor
   - id: first-model
     title: Initial model
     start: 2026-01-01
     end: 2026-02-15
-    model: model-a
+    model: GPT Sol 5.6
   - id: second-model
     title: New model, same editor
     start: 2026-02-01
-    model: model-b
+    model: Claude Opus 5
 ```
 
-Define the referenced catalogs separately. Both models overlap February 1–15; the editor's lifetime is independent.
+These examples use direct tool names and need no model/harness catalogs. Both models overlap February 1–15; the editor's lifetime is independent.
 
 ## Two models, one workflow
 
@@ -89,19 +89,19 @@ entries:
   - id: paired-coding
     title: A lightweight and a deep coding assistant
     start: 2026-07-01
-    harness: my-editor
+    harness: Cursor
     category: code
     models:
-      - model: model-a
+      - model: GPT Sol 5.6
         role: Light coding
-      - model: model-b
+      - model: Claude Opus 5
         role: Heavy coding
     notes: |
       Small fixes go to the fast model; complex changes get a deeper review.
       Both are part of the same project workflow in the same editor.
 ```
 
-Define the referenced models, harness and category in their catalogs. The period stays one block in the Code activity, with a strip for each model and one shared harness strip. Roles also appear in details and Journal, and are searchable. Overview totals count distinct model IDs, not roles.
+Declare `code: Code` in the categories mapping; model and harness names are written directly in the entry. The period stays one block in the Code activity, with a strip for each model and one shared harness strip. Roles also appear in details and Journal, and are searchable. Overview totals count distinct model IDs, not roles.
 
 ## Navigating long histories
 

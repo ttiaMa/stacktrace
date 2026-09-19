@@ -39,49 +39,50 @@ site:
   title: My AI stack
   description: What I use, what I tried, and why I switched.
   author: Your name
-models:
-  my-model:
-    name: Any model or version
-    color: '#85b5ae'
-    icon: '◇'
-harnesses:
-  my-tool:
-    name: Any editor, CLI or chat app
-    icon: terminal
-    color: '#b49ace'
 categories:
-  coding:
-    name: Code
-    icon: code
+  code: Code
+  chat: Chat
 entries:
-  - id: first-workflow
-    title: My daily workflow
+  - id: daily-coding
+    title: Building my personal dashboard
     start: 2026-09-01
     # end: 2026-09-30  # Omit or set null while still in use.
-    model: my-model
-    harness: my-tool
-    category: coding
+    model: GPT Sol 5.6
+    harness: Pi
+    category: code
     notes: |
-      Why I chose this stack, what worked, and what changed.
-    tags: [daily-driver, work]
+      Why I chose this setup, what I built, and what I learned.
+      Keep the decisions and experiments worth revisiting here.
+    url: https://example.com/my-dashboard
+    tags: [daily-driver, personal-project]
+
+  - id: project-conversations
+    title: Thinking through the next project
+    start: 2026-09-05
+    model: Claude Opus 5
+    harness: Hermes Agent
+    category: chat
+    notes: |
+      Comparing ideas and turning rough notes into a plan.
+    tags: [planning]
 ```
 
-A **model** is the intelligence; a **harness** is the application or environment around it: a CLI, editor, chat UI or custom agent runtime. Names and IDs are yours. There is no fixed tool catalog.
+A **model** is the intelligence; a **harness** is the application or environment around it: a CLI, editor, chat UI or custom agent runtime. Write the model version and harness name directly in each entry. Names are yours; no separate model/harness catalog is required. Icons are matched automatically from names using bundled [Lobe Icons](https://github.com/lobehub/lobe-icons), with a character fallback for unknown tools or unavailable icons. No icon fields or external icon requests are needed.
 
-Every entry records a period of use, not a model release date. Entries can overlap freely. Each can contain one or more models and a shared harness, or just models or a harness. To track a harness that outlasts several models, use a harness-only period and separate model periods, or create successive paired entries. Entries can reuse the same catalog IDs. Categories define the timeline rows (for example Code, Chat, Research and Experiments), in YAML order. Reuse a category across periods: successive periods share a lane and concurrent periods stack inside that activity row. Each period keeps its own title, notes, tags and project link; click its block to read the full story. Existing version 1 configurations work without migration.
+Every entry records a period of use, not a model release date. Entries can overlap freely. Each can contain one or more models and a shared harness, or just models or a harness. To track a harness that outlasts several models, use a harness-only period and separate model periods, or create successive paired entries. Reuse the same name for the same tool; use distinct version names to preserve your history. Categories define the timeline rows (for example Code, Chat, Research and Experiments), in YAML order. Reuse a category across periods: successive periods share a lane and concurrent periods stack inside that activity row. Each period keeps its own title, notes, tags and project link; click its block to read the full story. Existing version 1 configurations work without migration.
 
 For two models in the same period, replace the entry's `model` field with `models`:
 
 ```yaml
-    harness: my-tool
+    harness: Cursor
     models:
-      - model: fast-model
+      - model: GPT Sol 5.6
         role: Light coding
-      - model: deep-model
+      - model: Claude Opus 5
         role: Heavy coding
 ```
 
-Define `fast-model` and `deep-model` in the root model catalog. The roles are optional, searchable labels; both models share the entry's dates, title, notes and project link. Use separate periods when their dates differ. Do not set both `model` and `models` on an entry.
+The roles are optional, searchable labels; both models share the entry's dates, title, notes and project link. Use separate periods when their dates differ. Do not set both `model` and `models` on an entry.
 
 ## Features
 
