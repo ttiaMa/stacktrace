@@ -103,3 +103,6 @@
 .journal-topbar .chips{flex:1 1 360px}
 .journal-topbar .segmented{margin-left:auto}
 @media(max-width:540px){.journal-topbar .chips{flex-basis:100%;order:2}}
+
+/* History updates keep their own viewport anchor; content must not retarget it. */
+.history-page{overflow-anchor:none}

@@ -14,13 +14,15 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
     removeAttribute(key) { delete this.attrs[key]; }
     focus() { this.focused=true; }
     contains(node) { return node===this || this.children.some(child=>child?.contains?.(node)); }
+    getBoundingClientRect() { return {top:272-context.window.scrollY,bottom:872-context.window.scrollY}; }
     dispatchEvent(event) { Object.defineProperty(event,'target',{value:this}); this.events[event.type]?.(event); }
     addEventListener(type, handler) { const previous=this.events[type]; this.events[type]=event=>{previous?.(event);handler(event);}; }
   }
   const nodes = {};
+  const requests=[];
   const context = vm.createContext({URLSearchParams, Intl, Date, Math, Set, Event,
     location:{search,pathname:'/'}, history:{replaceState(){}}, window:{scrollX:0,scrollY:0,innerHeight:900,scrollTo({left,top}){this.scrollX=left;this.scrollY=top;},addEventListener(){}},
-    document:{body:new Node(),events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
+    document:{body:new Node(),documentElement:{scrollHeight:950},events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
       if (!nodes[id]) {
         nodes[id]=new Node();
         if (id==='zoom') {
@@ -33,14 +35,14 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
       const visit=node=>[...(node.className?.startsWith('period-block')?[node]:[]),...(node.children || []).flatMap(visit)];
       return visit(nodes.timeline);
     }},
-    fetch:()=>new Promise(()=>{}),setInterval(){throw new Error('Background polling is not allowed');}});
+    fetch:url=>{requests.push(url);return new Promise(()=>{});},setInterval(){throw new Error('Background polling is not allowed');}});
   vm.runInContext(fs.readFileSync('app/static/app.js','utf8'),context);
   context.fixture={today:'2026-09-18', entries:entries.map(e=>({model:'m',tags:[],notes:'',...e})),
     categories,models:{m:{name:'Model',icon:'M',color:'#abcdef'}},harnesses:{}};
-  vm.runInContext('data=fixture; renderTimeline(filtered())',context);
+  vm.runInContext('data=fixture; renderCategories(); renderTimeline(filtered())',context);
   const rows=()=>nodes.timeline.children[0].children.slice(1);
   const blocks=row=>row.children[1].children.filter(n=>n.className?.startsWith('period-block'));
-  return {context,nodes,rows,blocks};
+  return {context,nodes,rows,blocks,requests};
 }
 test('activity rows pack overlaps and reuse lanes after inclusive end dates',()=>{
   const app=setup([
@@ -235,7 +237,8 @@ test('switching views restores page position when timeline layout clamps scrolli
     renderTimeline=entries=>{originalTimeline(entries);window.scrollY=0;};`,app.context);
   app.nodes['timeline-view'].events.click();
   assert.equal(app.context.window.scrollY,191);
-  assert.equal(app.context.document.body.style.minHeight,'1091px');
+  assert.equal(app.context.document.body.style.minHeight,undefined);
+  assert.equal(app.nodes['history-page'].style.minHeight,'741px');
   app.nodes['journal-view'].events.click();
   assert.equal(app.context.window.scrollY,191);
   assert.equal(app.nodes.details.hidden,true);
@@ -268,4 +271,36 @@ test('the author is linked only when a reference URL is configured',()=>{
   assert.equal(app.nodes.author.children[0].rel,'noopener noreferrer');
   vm.runInContext("data.site.url='';renderAuthor()",app.context);
   assert.deepEqual(app.nodes.author.children,['Mattia',' / AI JOURNAL']);
+});
+
+test('history controls retain their nodes and reuse the single loaded snapshot',()=>{
+  const app=setup([{id:'a',title:'Code',category:'code',start:'2024-01-01'},
+    {id:'b',title:'Chat',category:'chat',start:'2025-01-01'}]);
+  const buttons=[...app.nodes.categories.children];
+  app.context.window.scrollY=150;
+  buttons[2].events.click();
+  assert.equal(app.context.window.scrollY,150);
+  assert.equal(app.nodes.categories.children[2],buttons[2]);
+  assert.equal(buttons[2].attrs['aria-pressed'],'true');
+  app.nodes.zoom.value='years'; app.nodes.zoom.dispatchEvent(new Event('change'));
+  assert.equal(app.context.window.scrollY,150);
+  app.nodes.search.events.input({target:{value:'No matches'}});
+  assert.match(app.nodes.timeline.children[0].textContent,/No matching/);
+  assert.equal(app.context.window.scrollY,150);
+  app.nodes['journal-view'].events.click();
+  app.nodes.search.events.input({target:{value:''}});
+  app.nodes['timeline-view'].events.click();
+  assert.equal(app.context.window.scrollY,150);
+  assert.deepEqual(app.requests,['/api/timeline']);
+  for (let index=0;index<buttons.length;index++) assert.equal(app.nodes.categories.children[index],buttons[index]);
+});
+
+test('timeline layout is measured with the previous chart still attached',()=>{
+  const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
+  Object.defineProperty(app.nodes.timeline,'clientWidth',{get(){
+    assert.equal(app.nodes.timeline.children.length,1,'must not measure an empty timeline');
+    return 1000;
+  }});
+  vm.runInContext("updateHistory({zoom:'years'})",app.context);
+  assert.equal(app.nodes.timeline.children.length,1);
 });

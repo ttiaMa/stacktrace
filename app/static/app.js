@@ -10,7 +10,6 @@ const state = {category: params.get('category') || '', query: params.get('q') ||
   zoom: ['fit','years'].includes(params.get('zoom')) ? params.get('zoom') : 'detail',
   view: params.get('view') === 'journal' ? 'journal' : 'timeline', selected: ''};
 let data;
-let version = '';
 let viewport;
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -27,9 +26,7 @@ function updateURL() {
   }
   history.replaceState(null, '', location.pathname + (query.size ? '?' + query : ''));
 }
-function choose(entry) { state.selected = entry?.id || ''; renderDetails();
-  document.querySelectorAll('.period-block').forEach(block => block.setAttribute('aria-pressed', String(block.dataset.id === state.selected)));
-}
+function choose(entry) { updateHistory({selected:entry?.id || ''}); }
 function entities(entry) {
   const models = entry.models?.length ? entry.models : entry.model ? [{model:entry.model}] : [];
   return [...models.map(ref=>({kind:'model',id:ref.model,...data.models[ref.model],role:ref.role || ''})),
@@ -96,7 +93,8 @@ function renderCategories() {
   $('categories').replaceChildren();
   for (const [id, label] of [['','All activity'], ...Object.entries(data.categories).map(([key,c])=>[key,c.name])]) {
     const button = el('button','',label); button.setAttribute('aria-pressed',String(state.category === id));
-    button.addEventListener('click',()=>{state.category=id; updateURL(); renderCategories(); renderMain();}); $('categories').append(button);
+    button.dataset.category=id;
+    button.addEventListener('click',()=>updateHistory({category:id})); $('categories').append(button);
   }
 }
 function filtered() {
@@ -108,9 +106,8 @@ function filtered() {
 function renderTimeline(entries) {
   const container = $('timeline'); const scrollLeft = container.scrollLeft || 0, scrollTop = container.scrollTop || 0;
   const previous = viewport;
-  container.replaceChildren();
   $('timeline-nav').hidden = !entries.length;
-  if (!entries.length) { viewport = undefined; container.append(el('p','empty','No matching periods. Try another filter or add an entry to your YAML.')); return; }
+  if (!entries.length) { viewport = undefined; container.replaceChildren(el('p','empty','No matching periods. Try another filter or add an entry to your YAML.')); return; }
   const today = parseDate(data.today);
   const first = Math.min(...entries.map(e=>parseDate(e.start)),today);
   const last = Math.max(...entries.map(end),today+DAY);
@@ -184,7 +181,8 @@ function renderTimeline(entries) {
     track.style.height = top+'px';
     row.append(label,track); chart.append(row);
   }
-  container.append(chart);
+  // Build off-screen, then replace once; never measure an emptied live chart.
+  container.replaceChildren(chart);
   viewport = {start,span,width:chartWidth,visible:container.clientWidth,blocks,key:[state.category,state.query].join('|')};
   const max = Math.max(0, chartWidth-container.clientWidth);
   if (!previous || previous.key !== viewport.key) {
@@ -223,14 +221,15 @@ function syncNavigation() {
   }
 }
 function renderJournal(entries) {
-  $('journal').replaceChildren();
-  if (!entries.length) $('journal').append(el('p','empty','No matching periods.'));
+  const articles=[];
+  if (!entries.length) articles.push(el('p','empty','No matching periods.'));
   for (const entry of [...entries].reverse()) {
     const item = el('article','journal-item');
     item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('div','period-date',rangeText(entry)),el('h3','',entry.title),badges(entry));
     appendStory(item,entry);
-    $('journal').append(item);
+    articles.push(item);
   }
+  $('journal').replaceChildren(...articles);
 }
 function renderMain() {
   const statsPage=state.section==='stats';
@@ -240,6 +239,9 @@ function renderMain() {
   if (statsPage) return;
   const entries = filtered();
   $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · complete history`;
+  // Render the destination before hiding the previous view to avoid an empty layout.
+  if (state.view==='timeline') { $('timeline').hidden=false; renderTimeline(entries); }
+  else renderJournal(entries);
   $('timeline').hidden=state.view!=='timeline'; $('journal').hidden=state.view!=='journal';
   $('details').hidden=state.view==='journal';
   $('timeline-nav').hidden=state.view!=='timeline' || !entries.length;
@@ -247,24 +249,32 @@ function renderMain() {
   $('timeline-view').setAttribute('aria-pressed',String(state.view==='timeline'));
   $('journal-view').setAttribute('aria-pressed',String(state.view==='journal'));
   $('view-switch').dataset.view=state.view;
-  if (state.view==='timeline') renderTimeline(entries); else renderJournal(entries);
 }
-function switchView(view) {
-  if (view===state.view) return;
+function updateHistory(changes) {
+  if (Object.entries(changes).every(([key,value])=>state[key]===value)) return;
   const left=window.scrollX, top=window.scrollY;
-  state.view=view; updateURL();
+  Object.assign(state,changes); updateURL();
   if (data) {
-    // Keep enough document height for the current viewport while content changes,
-    // including when the timeline is shorter than the Journal on a tall screen.
-    document.body.style.minHeight=Math.ceil(top+window.innerHeight)+'px';
-    renderMain();
+    // If the result becomes shorter than the visible page, retain only the space
+    // needed below this viewport. Otherwise the browser must clamp scrollY.
+    // This belongs to the history region, not a permanent minimum on the body.
+    const page=$('history-page'), bounds=page.getBoundingClientRect();
+    const below=Math.max(0,document.documentElement.scrollHeight-(top+bounds.bottom));
+    page.style.minHeight=Math.ceil(Math.max(0,window.innerHeight-bounds.top-below))+'px';
+    for (const button of $('categories').children) {
+      button.setAttribute('aria-pressed',String(button.dataset.category===state.category));
+    }
+    if ('selected' in changes) {
+      renderDetails();
+      document.querySelectorAll('.period-block').forEach(block=>block.setAttribute('aria-pressed',String(block.dataset.id===state.selected)));
+    } else renderMain();
     window.scrollTo({left,top,behavior:'instant'});
   }
 }
 function switchSection(section) {
   if (state.section===section) return;
   state.section=section; updateURL();
-  document.body.style.minHeight='';
+  $('history-page').style.minHeight='';
   if (data) renderMain();
 }
 function renderDetails() {
@@ -364,14 +374,13 @@ function enhanceSelect(id) {
   select.addEventListener('change',sync);
   sync(); select.hidden=true; wrapper.append(trigger,list);
 }
-async function refresh() {
+async function loadTimeline() {
   try {
     const response=await fetch('/api/timeline',{cache:'no-store'});
     if (!response.ok) throw new Error('Configuration unavailable. Check the server logs.');
     const next=await response.json();
     notice(next.stale?'The YAML has an error. Showing the last valid timeline; check the server logs.':'');
-    if (version===next.revision+next.today) return;
-    data=next; version=data.revision+data.today;
+    data=next;
     if (state.category && !data.categories[state.category]) {state.category='';updateURL();}
     document.title=data.site.title+' · Stacktrace'; $('title').textContent=data.site.title;
     $('description').textContent=data.site.description;
@@ -379,7 +388,7 @@ async function refresh() {
     $('app-version').textContent=data.app_version || 'development';
     $('today-label').textContent=human(data.today).toUpperCase();
     renderOverview(); renderCategories(); renderMain(); renderDetails();
-  } catch (error) { notice(data?'Unable to refresh. Showing the last loaded timeline.':error.message); }
+  } catch (error) { notice(error.message); }
 }
 $('search').value=state.query;
 $('zoom').value=state.zoom;
@@ -400,10 +409,10 @@ for (const [id, direction] of [['earlier',-1],['later',1]]) $(id).addEventListen
   const container=$('timeline'); setTimelinePosition(container.scrollLeft+direction*Math.max(150,container.clientWidth-150)*.8);
 });
 $('latest').addEventListener('click',()=>setTimelinePosition(maxTimelineScroll()));
-$('zoom').addEventListener('change',event=>{state.zoom=event.target.value;updateURL();if(data)renderMain();});
+$('zoom').addEventListener('change',event=>updateHistory({zoom:event.target.value}));
 window.addEventListener('resize',()=>{if(data && state.section==='journal' && state.view === 'timeline') renderMain();});
-$('search').addEventListener('input',event=>{state.query=event.target.value;updateURL();if(data)renderMain();});
-for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>switchView(view));
+$('search').addEventListener('input',event=>updateHistory({query:event.target.value}));
+for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>updateHistory({view}));
 for (const section of ['journal','stats']) $(section+'-section').addEventListener('click',()=>switchSection(section));
 $('share').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
@@ -411,4 +420,4 @@ $('share').addEventListener('click',async()=>{
 });
 // Load once per page visit. New YAML data and today's date appear on reload.
 updateURL(); // Drop legacy entry links: selection belongs only to this page visit.
-refresh();
+loadTimeline();

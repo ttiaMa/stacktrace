@@ -18,7 +18,7 @@ Dark, quiet, dashboard-inspired design. No database, accounts, analytics, extern
 docker compose up -d --build
 ```
 
-Open **http://localhost:8080**. Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. The timeline file is mounted read-only, so atomic saves from editors work too.
+Open **http://localhost:8080**. Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. Categories, search, scale and display modes use the snapshot already loaded in the browser; they do not reload the page or request new timeline data. The timeline file is mounted read-only, so atomic saves from editors work too.
 
 ```sh
 # Validate configuration
@@ -141,7 +141,7 @@ CI validates configuration, runs tests, builds Docker and smoke-tests routes. Se
 stacktrace/
   app/
     config.py             # Safe YAML parsing and validation
-    server.py             # Read-only WSGI routes and live reload
+    server.py             # Read-only WSGI routes and YAML validation
     static/               # Plain HTML, CSS and JavaScript
   config/timeline.yaml    # Your timeline's only data source
   tests/test_app.py
