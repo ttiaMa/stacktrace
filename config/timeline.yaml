@@ -6,66 +6,13 @@ site:
   description: A personal record of the models, tools and experiments behind the work.
   author: Your name
 
-# IDs and names are free-form. Provider is optional and only supplies a color.
-models:
-  sonnet:
-    name: Claude Sonnet
-    provider: anthropic
-    icon: '✳'
-  gpt:
-    name: GPT
-    provider: openai
-    icon: '◎'
-  gemini:
-    name: Gemini
-    provider: google
-    icon: '✧'
-  local:
-    name: Local model
-    provider: local
-    icon: '◇'
-
-harnesses:
-  cursor:
-    name: Cursor
-    icon: ide
-    color: '#b49ace'
-  claude-code:
-    name: Claude Code
-    icon: terminal
-    color: '#d9ac80'
-  codex:
-    name: Codex CLI
-    icon: terminal
-    color: '#85b5ae'
-  chatgpt:
-    name: ChatGPT
-    icon: chat
-    color: '#85b5ae'
-  studio:
-    name: AI Studio
-    icon: web
-    color: '#90aac8'
-  hermes:
-    name: Hermes Agent
-    icon: chat
-    color: '#c7ad83'
-  pi:
-    name: Pi
-    icon: terminal
-    color: '#b5b986'
-  ollama:
-    name: Ollama
-    icon: terminal
-    color: '#b5b986'
-
 # Each category becomes one timeline row, in this order.
 # Reuse its ID across entries: overlaps stay inside the same activity row.
 categories:
-  code: {name: Code, icon: code}
-  chat: {name: Chat, icon: chat}
-  research: {name: Research, icon: research}
-  experiments: {name: Experiments, icon: experiment}
+  code: Code
+  chat: Chat
+  research: Research
+  experiments: Experiments
 
 # Each entry is still a story: title, dates, model/harness, notes and optional URL.
 # Illustrative multi-year history: sequential periods, overlaps and ongoing use.
@@ -74,8 +21,8 @@ entries:
     title: Small scripts, one conversation at a time
     start: 2023-04-01
     end: 2023-12-15
-    model: gpt
-    harness: chatgpt
+    model: GPT
+    harness: ChatGPT
     category: code
     notes: |
       My first use was a personal library organizer: naming files, checking
@@ -89,8 +36,8 @@ entries:
     title: A notebook for rough ideas
     start: 2023-06-10
     end: 2025-12-31
-    model: gpt
-    harness: chatgpt
+    model: GPT
+    harness: ChatGPT
     category: chat
     notes: |
       Drafting project outlines and finding clearer explanations.
@@ -101,8 +48,8 @@ entries:
     title: Comparing technical approaches
     start: 2024-06-01
     end: 2025-10-31
-    model: gemini
-    harness: studio
+    model: Gemini
+    harness: AI Studio
     category: research
     notes: |
       Compared storage and search approaches for a personal archive.
@@ -114,8 +61,8 @@ entries:
     title: An offline search prototype
     start: 2024-09-01
     end: 2024-11-30
-    model: local
-    harness: ollama
+    model: Local model
+    harness: Ollama
     category: experiments
     notes: |
       Tested an offline assistant against a small set of personal documents.
@@ -126,8 +73,8 @@ entries:
     title: The editor-first workflow
     start: 2024-01-05
     end: 2025-04-18
-    model: sonnet
-    harness: cursor
+    model: Claude Sonnet
+    harness: Cursor
     category: code
     notes: |
       Started with an assistant inside the editor. Small changes, quick feedback,
@@ -138,8 +85,8 @@ entries:
     title: A thinking partner
     start: 2026-01-20
     end: 2026-07-31
-    model: gpt
-    harness: chatgpt
+    model: GPT
+    harness: ChatGPT
     category: chat
     notes: Architecture discussions, writing and a second opinion before implementation.
     tags: [planning, writing]
@@ -148,8 +95,8 @@ entries:
     title: Moving into the terminal
     start: 2025-03-10
     end: 2026-07-04
-    model: sonnet
-    harness: claude-code
+    model: Claude Sonnet
+    harness: Claude Code
     category: code
     notes: |
       Tried an agent with access to the whole repository. Kept the editor workflow
@@ -159,8 +106,8 @@ entries:
   - id: deeper-research
     title: A second lens on research
     start: 2026-04-02
-    model: gemini
-    harness: studio
+    model: Gemini
+    harness: AI Studio
     category: research
     notes: Reading technical material and comparing approaches before committing to one.
     tags: [research]
@@ -169,8 +116,8 @@ entries:
     title: Local weekend experiments
     start: 2026-05-15
     end: 2026-06-21
-    model: local
-    harness: ollama
+    model: Local model
+    harness: Ollama
     category: experiments
     notes: Exploring what works offline on the hardware already on my desk.
     tags: [local, offline]
@@ -180,11 +127,11 @@ entries:
     start: 2026-06-12
     # Both models share this harness, period and story.
     models:
-      - model: gpt
+      - model: GPT
         role: Light coding
-      - model: sonnet
+      - model: Claude Sonnet
         role: Heavy coding
-    harness: cursor
+    harness: Cursor
     category: code
     notes: |
       One editor, two models: quick implementation and tests with GPT,
@@ -197,7 +144,7 @@ entries:
     title: Keeping the editor around
     start: 2026-07-05
     end: 2026-08-14
-    harness: cursor
+    harness: Cursor
     category: code
     notes: "A harness-only period: model selection changes too often to record one model."
     tags: [review]
@@ -205,8 +152,8 @@ entries:
   - id: hermes-conversations
     title: A continuing conversation with Hermes
     start: 2026-08-01
-    model: gpt
-    harness: hermes
+    model: GPT
+    harness: Hermes Agent
     category: chat
     notes: |
       Trying Hermes Agent for ongoing project conversations: collecting ideas,
@@ -218,8 +165,8 @@ entries:
   - id: pi-coding
     title: A smaller coding harness to make my own
     start: 2026-08-15
-    model: sonnet
-    harness: pi
+    model: Claude Sonnet
+    harness: Pi
     category: code
     notes: |
       Exploring Pi for focused coding sessions in the terminal: small patches,

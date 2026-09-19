@@ -70,14 +70,29 @@ def normalize(raw):
         check(isinstance(catalog, dict) and len(catalog) <= 500, f'{kind}: expected a mapping, max 500 items')
         result[kind] = {}
         for index, (key, item) in enumerate(catalog.items()):
+            if kind == 'categories' and isinstance(item, str):
+                item = {'name': item}
             check(isinstance(key, str) and bool(re.fullmatch(r'[a-zA-Z0-9_-]{1,80}', key)), f'{kind}: invalid ID')
             item = obj(item, f'{kind}.{key}', {'name', 'color', 'icon', 'provider'})
             provider = string(item.get('provider'), f'{kind}.{key}.provider', 'custom')
             color = item.get('color', PRESETS.get(provider.lower(), PALETTE[index % len(PALETTE)]))
             check(isinstance(color, str) and bool(re.fullmatch(r'#[0-9a-fA-F]{6}', color)), f'{kind}.{key}.color: use #RRGGBB')
-            icon = string(item.get('icon'), f'{kind}.{key}.icon', '◇' if kind == 'models' else '▣')
+            icon = string(item.get('icon'), f'{kind}.{key}.icon', ICONS.get(key.rstrip('s'), '◇' if kind == 'models' else '▣'))
             result[kind][key] = {'name': string(item.get('name'), f'{kind}.{key}.name'),
                                  'color': color, 'icon': ICONS.get(icon, icon), 'provider': provider}
+    def resolve(value, catalog, path):
+        if value is None:
+            return None
+        name = string(value, path).strip()
+        if catalog in raw:
+            check(name in result[catalog], path + ': unknown reference')
+            return name
+        key = 'name-' + hashlib.sha256(name.encode()).hexdigest()[:20]
+        if key not in result[catalog]:
+            check(len(result[catalog]) < 500, path + ': max 500 distinct names')
+            result[catalog][key] = {'name': name, 'color': PALETTE[int(key[-4:], 16) % len(PALETTE)],
+                                    'icon': '◇' if catalog == 'models' else '▣', 'provider': 'custom'}
+        return key
     entries = raw.get('entries', [])
     check(isinstance(entries, list) and len(entries) <= 2000, 'entries: expected a list, max 2000 items')
     ids = set()
@@ -103,12 +118,15 @@ def normalize(raw):
         for model_index, model_ref in enumerate(model_refs):
             mp = f'{p}.models[{model_index}]'
             model_ref = obj(model_ref, mp, {'model', 'role'})
-            ref = model_ref.get('model')
-            check(isinstance(ref, str) and ref in result['models'], mp + ': unknown model reference')
+            check(model_ref.get('model') is not None, mp + ': model is required')
+            ref = resolve(model_ref.get('model'), 'models', mp + '.model')
             out['models'].append({'model': ref, 'role': string(model_ref.get('role'), mp + '.role', '')})
         for field, catalog in [('model', 'models'), ('harness', 'harnesses'), ('category', 'categories')]:
             ref = entry.get(field)
-            check(ref is None or isinstance(ref, str) and ref in result[catalog], p + f'.{field}: unknown reference')
+            if catalog != 'categories':
+                ref = resolve(ref, catalog, p + '.' + field)
+            else:
+                check(ref is None or isinstance(ref, str) and ref in result[catalog], p + f'.{field}: unknown reference')
             out[field] = ref
         tags = entry.get('tags', [])
         check(isinstance(tags, list) and len(tags) <= 30, p + '.tags: expected list, max 30')

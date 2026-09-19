@@ -1,5 +1,11 @@
 # Configuration reference — version 1
 
+## Direct names
+
+Write model and harness names directly in each entry: `model: Claude Opus 5`, `harness: Pi`, or `models: [{model: GPT Sol 5.6, role: Light coding}]`. No model/harness catalogs or icon fields are needed. Reusing the exact same name consolidates totals; different version names remain distinct. Categories accept a simple mapping such as `code: Code` and `chat: Chat`.
+
+Legacy version 1 files with root `models` or `harnesses` catalogs remain supported. When a catalog is present, its entry fields are interpreted as catalog IDs and unknown references are rejected. The tables below also document this legacy format.
+
 ## Root
 
 | Key | Type | Meaning |

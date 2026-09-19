@@ -15,6 +15,15 @@ class ValidationTests(unittest.TestCase):
         result=normalize(self.base)
         self.assertIsNone(result['entries'][0]['end'])
         self.assertEqual(result['models']['m']['name'],'Anything')
+    def test_direct_names_and_version_identity(self):
+        raw = {'version':1, 'categories':{'code':'Code'}, 'entries':[
+            {'id':'a','title':'First','start':'2026-01-01','model':'GPT Sol 5.6','harness':'Pi','category':'code'},
+            {'id':'b','title':'Next','start':'2026-02-01','models':[{'model':'GPT Sol 5.6','role':'Light'}, {'model':'Claude Opus 5'}]}]}
+        result = normalize(raw)
+        self.assertEqual(len(result['models']), 2)
+        self.assertEqual(result['entries'][0]['model'], result['entries'][1]['models'][0]['model'])
+        self.assertEqual(result['categories']['code']['name'], 'Code')
+        self.assertEqual(next(iter(result['harnesses'].values()))['name'], 'Pi')
     def test_harness_only_and_overlap(self):
         self.base['entries'].append({'id':'two','title':'Harness only','start':'2026-01-01','harness':'h'})
         self.assertEqual(len(normalize(self.base)['entries']),2)
