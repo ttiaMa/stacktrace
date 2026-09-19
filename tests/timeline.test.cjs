@@ -131,3 +131,15 @@ test('icon aliases distinguish harnesses and fall back on missing files or unkno
   assert.equal(icon.children[0].hidden,false);
   assert.equal(vm.runInContext("entityIcon({name:'My unknown tool',kind:'harness'}).children.length",app.context),1);
 });
+
+test('Journal and selected details include the same story, project link and tags',()=>{
+  const app=setup([{id:'a',title:'Story',category:'code',start:'2026-01-01',notes:'Why I chose this workflow.',url:'https://example.com/project',tags:['project','review']}]);
+  vm.runInContext('renderJournal(filtered()); choose(data.entries[0])',app.context);
+  for (const target of [app.nodes.journal.children[0],app.nodes.details]) {
+    assert.equal(target.children.find(n=>n.className==='notes').textContent,'Why I chose this workflow.');
+    const link=target.children.find(n=>n.href);
+    assert.equal(link.href,'https://example.com/project');
+    assert.equal(link.rel,'noopener noreferrer');
+    assert.deepEqual(target.children.at(-1).children.map(n=>n.textContent),['#project','#review']);
+  }
+});

@@ -219,8 +219,8 @@ function renderJournal(entries) {
   if (!entries.length) $('journal').append(el('p','empty','No matching periods.'));
   for (const entry of [...entries].reverse()) {
     const item = el('article','journal-item'); const button=el('button','',entry.title); button.addEventListener('click',()=>choose(entry));
-    item.append(el('div','period-date',rangeText(entry)),button,badges(entry));
-    if (entry.notes) item.append(el('p','notes',entry.notes));
+    item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('div','period-date',rangeText(entry)),button,badges(entry));
+    appendStory(item,entry);
     $('journal').append(item);
   }
 }
@@ -247,6 +247,9 @@ function renderDetails() {
   heading.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('h3','',entry.title),el('p','period-date',rangeText(entry)));
   const close=el('button','','×'); close.setAttribute('aria-label','Close period details'); close.addEventListener('click',()=>choose(null));
   top.append(heading,close); target.append(top,badges(entry));
+  appendStory(target,entry);
+}
+function appendStory(target,entry) {
   if (entry.notes) target.append(el('p','notes',entry.notes));
   if (entry.url) { const link=el('a','','Related project ↗'); link.href=entry.url; link.target='_blank'; link.rel='noopener noreferrer'; target.append(link); }
   const tags=el('div'); for (const tag of entry.tags) tags.append(el('span','tag','#'+tag)); target.append(tags);
