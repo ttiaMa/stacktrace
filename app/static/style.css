@@ -54,3 +54,10 @@
 .info-popover{position:absolute;right:0;top:100%;width:320px;max-width:calc(100vw - 32px);padding:20px;background:var(--panel);border:1px solid var(--border);border-radius:7px;box-shadow:0 12px 32px #0005;z-index:10}
 .info-popover .guide{display:block;border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
 @media(max-width:540px){.header-right{gap:8px}.info-popover{right:-75px}}
+
+/* Keep range and scale together even when the toolbar has spare room. */
+.controls{justify-content:flex-end;align-items:center}
+.filter-controls{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.controls .search{margin-right:auto}
+@media(min-width:1400px){.controls{min-width:0}.toolbar{gap:20px}}
+@media(max-width:540px){.filter-controls{gap:6px}}
