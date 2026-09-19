@@ -123,7 +123,7 @@ function renderTimeline(entries) {
   const position = value => Math.max(0,Math.min(100,(value-start)/span*100));
   const chart = el('div','chart');
   const blocks = [];
-  const chartWidth = Math.max(740, container.clientWidth, state.zoom === 'fit' ? 0 : 150 + span / (365.25*DAY) * (state.zoom === 'detail' ? 2880 : 480));
+  const chartWidth = Math.ceil(Math.max(740, container.clientWidth, state.zoom === 'fit' ? 0 : 150 + span / (365.25*DAY) * (state.zoom === 'detail' ? 2880 : 480)));
   chart.style.width = chartWidth + 'px';
   const axisRow = el('div','axis-row'); axisRow.append(el('div','axis-title','ACTIVITY'));
   const axis = el('div','axis'); const ticks=[];
@@ -201,14 +201,23 @@ function renderTimeline(entries) {
   container.scrollTop=scrollTop;
   syncNavigation();
 }
+function maxTimelineScroll() {
+  return viewport ? Math.max(0,viewport.width-$('timeline').clientWidth) : 0;
+}
+function setTimelinePosition(position) {
+  if (!viewport) return;
+  $('timeline').scrollLeft=Math.max(0,Math.min(maxTimelineScroll(),position));
+  syncNavigation();
+}
 function syncNavigation() {
   if (!viewport) return;
-  const container = $('timeline'), max = Math.max(0,viewport.width-container.clientWidth);
+  const container = $('timeline'), max = maxTimelineScroll();
   const slider = $('timeline-position');
-  slider.max = String(max); slider.value = String(container.scrollLeft); slider.disabled = max === 0;
+  slider.max = '1000'; slider.value = String(max ? Math.round(container.scrollLeft/max*1000) : 0); slider.disabled = max === 0;
   const left = viewport.start+container.scrollLeft/(viewport.width-150)*viewport.span;
-  const right = Math.min(viewport.start+viewport.span,left+(container.clientWidth-150)/(viewport.width-150)*viewport.span);
-  const text = human(iso(left))+' — '+human(iso(right));
+  const right = container.scrollLeft >= max ? viewport.start+viewport.span : Math.min(viewport.start+viewport.span,left+(container.clientWidth-150)/(viewport.width-150)*viewport.span);
+  // The right boundary is exclusive, just like period end positions.
+  const text = human(iso(left))+' - '+human(iso(right-1));
   $('visible-dates').textContent = text; slider.setAttribute('aria-valuetext',text);
   for (const block of viewport.blocks) {
     const available = Math.min(block.right,container.scrollLeft+container.clientWidth-150)-Math.max(block.left,container.scrollLeft)-16;
@@ -297,11 +306,11 @@ $('timeline').addEventListener('click',event=>{
   if (data && state.selected && !event.target.closest('.period-block')) choose(null);
 });
 $('timeline').addEventListener('scroll',syncNavigation);
-$('timeline-position').addEventListener('input',event=>{ $('timeline').scrollLeft=Number(event.target.value); syncNavigation(); });
+$('timeline-position').addEventListener('input',event=>setTimelinePosition(Number(event.target.value)/1000*maxTimelineScroll()));
 for (const [id, direction] of [['earlier',-1],['later',1]]) $(id).addEventListener('click',()=>{
-  const container=$('timeline'); container.scrollLeft+=direction*Math.max(150,container.clientWidth-150)*.8; syncNavigation();
+  const container=$('timeline'); setTimelinePosition(container.scrollLeft+direction*Math.max(150,container.clientWidth-150)*.8);
 });
-$('latest').addEventListener('click',()=>{if(viewport){$('timeline').scrollLeft=viewport.width;syncNavigation();}});
+$('latest').addEventListener('click',()=>setTimelinePosition(maxTimelineScroll()));
 $('zoom').addEventListener('change',event=>{state.zoom=event.target.value;updateURL();if(data)renderMain();});
 window.addEventListener('resize',()=>{if(data && state.view === 'timeline') renderMain();});
 $('search').addEventListener('input',event=>{state.query=event.target.value;updateURL();if(data)renderMain();});

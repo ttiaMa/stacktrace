@@ -167,3 +167,25 @@ test('instance info supports pointer dismissal and Escape',()=>{
   app.context.document.events.keydown({key:'Escape'});
   assert.equal(app.nodes['app-info'].hidden,true);
 });
+
+test('slider, Latest and arrows share exact bounds at every timeline scale',()=>{
+  const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
+  for (const zoom of ['detail','years','fit']) {
+    vm.runInContext(`state.zoom='${zoom}'; renderTimeline(filtered())`,app.context);
+    assert.equal(Number.isInteger(parseFloat(app.nodes.timeline.children[0].style.width)),true);
+    app.nodes['timeline-position'].events.input({target:{value:'1000'}});
+    const position=app.nodes.timeline.scrollLeft, dates=app.nodes['visible-dates'].textContent;
+    assert.match(dates,/25 Sept 2026$/);
+    app.nodes.latest.events.click();
+    assert.equal(app.nodes.timeline.scrollLeft,position);
+    assert.equal(app.nodes['visible-dates'].textContent,dates);
+    app.nodes.later.events.click();
+    assert.equal(app.nodes.timeline.scrollLeft,position);
+    assert.equal(app.nodes['visible-dates'].textContent,dates);
+    app.nodes['timeline-position'].events.input({target:{value:'0'}});
+    app.nodes.earlier.events.click();
+    assert.equal(app.nodes.timeline.scrollLeft,0);
+    app.nodes.latest.events.click();
+    assert.equal(app.nodes.timeline.scrollLeft,position);
+  }
+});
