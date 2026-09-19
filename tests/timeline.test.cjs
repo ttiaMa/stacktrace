@@ -19,8 +19,8 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
   }
   const nodes = {};
   const context = vm.createContext({URLSearchParams, Intl, Date, Math, Set, Event,
-    location:{search,pathname:'/'}, history:{replaceState(){}}, window:{addEventListener(){}},
-    document:{events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
+    location:{search,pathname:'/'}, history:{replaceState(){}}, window:{scrollX:0,scrollY:0,innerHeight:900,scrollTo({left,top}){this.scrollX=left;this.scrollY=top;},addEventListener(){}},
+    document:{body:new Node(),events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
       if (!nodes[id]) {
         nodes[id]=new Node();
         if (id==='range' || id==='zoom') {
@@ -227,4 +227,18 @@ test('filter menus support keyboard selection, cancellation and outside dismissa
   assert.equal(vm.runInContext('state.range',app.context),'all');
   vm.runInContext("state.view='journal';renderMain()",app.context);
   assert.equal(app.nodes['zoom-control'].hidden,true);
+});
+
+test('switching views restores page position when timeline layout clamps scrolling',()=>{
+  const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
+  app.nodes['journal-view'].events.click();
+  app.context.window.scrollY=191;
+  vm.runInContext(`const originalTimeline=renderTimeline;
+    renderTimeline=entries=>{originalTimeline(entries);window.scrollY=0;};`,app.context);
+  app.nodes['timeline-view'].events.click();
+  assert.equal(app.context.window.scrollY,191);
+  assert.equal(app.context.document.body.style.minHeight,'1091px');
+  app.nodes['journal-view'].events.click();
+  assert.equal(app.context.window.scrollY,191);
+  assert.equal(app.nodes.details.hidden,true);
 });

@@ -245,6 +245,18 @@ function renderMain() {
   $('journal-view').setAttribute('aria-pressed',String(state.view==='journal'));
   if (state.view==='timeline') renderTimeline(entries); else renderJournal(entries);
 }
+function switchView(view) {
+  if (view===state.view) return;
+  const left=window.scrollX, top=window.scrollY;
+  state.view=view; updateURL();
+  if (data) {
+    // Keep enough document height for the current viewport while content changes,
+    // including when the timeline is shorter than the Journal on a tall screen.
+    document.body.style.minHeight=Math.ceil(top+window.innerHeight)+'px';
+    renderMain();
+    window.scrollTo({left,top,behavior:'instant'});
+  }
+}
 function renderDetails() {
   const entry = data.entries.find(e=>e.id===state.selected);
   if (!entry) {
@@ -378,7 +390,7 @@ $('zoom').addEventListener('change',event=>{state.zoom=event.target.value;update
 window.addEventListener('resize',()=>{if(data && state.view === 'timeline') renderMain();});
 $('search').addEventListener('input',event=>{state.query=event.target.value;updateURL();if(data)renderMain();});
 $('range').addEventListener('change',event=>{state.range=event.target.value;updateURL();if(data)renderMain();});
-for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>{state.view=view;updateURL();if(data)renderMain();});
+for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>switchView(view));
 $('share').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
   catch { window.prompt('Copy this view’s link:',location.href); }
