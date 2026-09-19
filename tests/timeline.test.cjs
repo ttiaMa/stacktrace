@@ -259,3 +259,13 @@ test('Stats has a direct route and preserves journal filters and view when retur
   assert.equal(app.nodes['stats-page'].hidden,false);
   assert.equal(app.nodes['stats-section'].attrs['aria-pressed'],'true');
 });
+
+test('the author is linked only when a reference URL is configured',()=>{
+  const app=setup([]);
+  vm.runInContext("data.site={author:'Mattia',url:'https://example.com/about'};renderAuthor()",app.context);
+  assert.equal(app.nodes.author.children[0].textContent,'Mattia');
+  assert.equal(app.nodes.author.children[0].href,'https://example.com/about');
+  assert.equal(app.nodes.author.children[0].rel,'noopener noreferrer');
+  vm.runInContext("data.site.url='';renderAuthor()",app.context);
+  assert.deepEqual(app.nodes.author.children,['Mattia',' / AI JOURNAL']);
+});

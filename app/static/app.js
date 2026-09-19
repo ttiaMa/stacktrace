@@ -286,10 +286,14 @@ function appendStory(target,entry) {
   if (entry.url) { const link=el('a','','Related project ↗'); link.href=entry.url; link.target='_blank'; link.rel='noopener noreferrer'; target.append(link); }
   const tags=el('div'); for (const tag of entry.tags) tags.append(el('span','tag','#'+tag)); target.append(tags);
 }
-function renderProfile() {
-  const link=$('profile-link');
-  link.hidden=!data.site.github;
-  link.href=data.site.github || '';
+function renderAuthor() {
+  const author=$('author'); author.replaceChildren();
+  if (data.site.url) {
+    const link=el('a','author-link',data.site.author);
+    link.href=data.site.url; link.target='_blank'; link.rel='noopener noreferrer';
+    author.append(link);
+  } else author.append(document.createTextNode(data.site.author));
+  author.append(document.createTextNode(' / AI JOURNAL'));
 }
 let infoMode='';
 function setInfo(open,mode='') {
@@ -369,8 +373,8 @@ async function refresh() {
     data=next; version=data.revision+data.today;
     if (state.category && !data.categories[state.category]) {state.category='';updateURL();}
     document.title=data.site.title+' · Stacktrace'; $('title').textContent=data.site.title;
-    $('description').textContent=data.site.description; $('author').textContent=data.site.author+' / AI JOURNAL';
-    renderProfile();
+    $('description').textContent=data.site.description;
+    renderAuthor();
     $('app-version').textContent=data.app_version || 'development';
     $('today-label').textContent=human(data.today).toUpperCase();
     renderOverview(); renderCategories(); renderMain(); renderDetails();

@@ -41,7 +41,7 @@ site:
   title: My AI stack
   description: What I use, what I tried, and why I switched.
   author: Your name
-  # github: https://github.com/your-username  # Optional button beside the title.
+  # url: https://github.com/your-username  # Optional link on the author name.
 categories:
   code: Code
   chat: Chat
@@ -70,7 +70,7 @@ entries:
     tags: [planning]
 ```
 
-A **model** is the intelligence; a **harness** is the application or environment around it: a CLI, editor, chat UI or custom agent runtime. Write the model version and harness name directly in each entry. Names are yours; no separate model/harness catalog is required. Icons are matched automatically from names using bundled [Lobe Icons](https://github.com/lobehub/lobe-icons), with a character fallback for unknown tools or unavailable icons. No icon fields or external icon requests are needed.
+A **model** is the intelligence; a **harness** is the application or environment around it: a CLI, editor, chat UI or custom agent runtime. Write the model version and harness name directly in each entry. Names are yours; no separate model/harness catalog is required. Icons are matched automatically from names using bundled [Lobe Icons](https://github.com/lobehub/lobe-icons), with a character fallback for unknown tools or unavailable icons. No icon fields or external icon requests are needed. Set `site.url` to link the author name above the title to your profile, website or project; omit it for plain text.
 
 Every entry records a period of use, not a model release date. Entries can overlap freely. Each can contain one or more models and a shared harness, or just models or a harness. To track a harness that outlasts several models, use a harness-only period and separate model periods, or create successive paired entries. Reuse the same name for the same tool; use distinct version names to preserve your history. Categories define the timeline rows (for example Code, Chat, Research and Experiments), in YAML order. Reuse a category across periods: successive periods share a lane and concurrent periods stack inside that activity row. Each period keeps its own title, notes, tags and project link; click its block to read the full story. Existing version 1 configurations work without migration.
 

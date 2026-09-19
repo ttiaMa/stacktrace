@@ -34,6 +34,15 @@ class ValidationTests(unittest.TestCase):
     def test_harness_only_and_overlap(self):
         self.base['entries'].append({'id':'two','title':'Harness only','start':'2026-01-01','harness':'h'})
         self.assertEqual(len(normalize(self.base)['entries']),2)
+    def test_optional_author_reference_url(self):
+        self.assertEqual(normalize(self.base)['site']['url'], '')
+        self.base['site'] = {'github':'https://github.com/ttiaMa'}
+        self.assertEqual(normalize(self.base)['site']['url'], 'https://github.com/ttiaMa')
+        self.base['site']['url'] = 'https://example.com/about'
+        self.assertEqual(normalize(self.base)['site']['url'], 'https://example.com/about')
+        for url in ['javascript:alert(1)', '//example.com', 'https://', 'https://user:secret@example.com', 'https://example.com:bad', 'https://example.com/a b']:
+            self.base['site']['url'] = url
+            with self.subTest(url=url), self.assertRaises(ConfigError): normalize(self.base)
     def test_multiple_models_share_one_period(self):
         entry = self.base['entries'][0]
         entry.pop('model')

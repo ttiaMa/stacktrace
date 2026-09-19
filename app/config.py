@@ -61,7 +61,7 @@ def date(value, path):
 def normalize(raw):
     raw = obj(raw, 'root', {'version', 'site', 'models', 'harnesses', 'categories', 'entries'})
     check(type(raw.get('version')) is int and raw['version'] == 1, 'version must be 1')
-    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author', 'github'})
+    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author', 'github', 'url'})
     github = string(site.get('github'), 'site.github', '')
     if github:
         try:
@@ -72,10 +72,22 @@ def normalize(raw):
         except ValueError:
             valid = False
         check(valid, 'site.github: use an HTTPS GitHub profile or repository URL')
+    reference_url = string(site.get('url'), 'site.url', '')
+    if reference_url:
+        try:
+            parsed = urlsplit(reference_url)
+            valid = (parsed.scheme in ('http', 'https') and bool(parsed.hostname)
+                     and not parsed.username and not parsed.password
+                     and (parsed.port is None or parsed.port > 0)
+                     and not any(c.isspace() for c in reference_url))
+        except ValueError:
+            valid = False
+        check(valid, 'site.url: use an HTTP or HTTPS URL without credentials')
     result = {'version': 1, 'site': {
         'title': string(site.get('title'), 'site.title', 'My AI stack'),
         'description': string(site.get('description'), 'site.description', 'Tools change. Keep the story.'),
-        'author': string(site.get('author'), 'site.author', 'Stack journal'), 'github': github}, 'entries': []}
+        'author': string(site.get('author'), 'site.author', 'Stack journal'),
+        'github': github, 'url': reference_url or github}, 'entries': []}
     for kind in ['models', 'harnesses', 'categories']:
         catalog = raw.get(kind, {})
         check(isinstance(catalog, dict) and len(catalog) <= 500, f'{kind}: expected a mapping, max 500 items')

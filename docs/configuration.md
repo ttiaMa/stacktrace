@@ -11,7 +11,7 @@ Legacy version 1 files with root `models` or `harnesses` catalogs remain support
 | Key | Type | Meaning |
 | --- | --- | --- |
 | `version` | integer | Required, exactly `1`. |
-| `site` | mapping | Optional `title`, `description`, `author`, `github`; defaults supplied. |
+| `site` | mapping | Optional `title`, `description`, `author`, `url` (legacy `github` supported); defaults supplied. |
 | `models` | mapping | Model IDs → catalog objects. |
 | `harnesses` | mapping | Harness IDs → catalog objects. |
 | `categories` | mapping | User-defined activity IDs → catalog objects; each activity is a timeline row, in declaration order. |
@@ -19,7 +19,7 @@ Legacy version 1 files with root `models` or `harnesses` catalogs remain support
 
 Catalogs and entries default to empty. Only documented keys are accepted. IDs use 1–80 ASCII letters, digits, `_` or `-`. Catalog IDs are independent; entry IDs must be unique. Explicit text values must be nonblank and at most 4,000 characters; omit optional text instead of writing empty strings. YAML anchors/aliases and duplicate keys are rejected.
 
-Set `site.github` to your HTTPS GitHub profile or repository URL to show a GitHub button beside the title. Omit it or set null to hide the button.
+Set `site.url` to an HTTP or HTTPS reference URL to make the author name above the title a link. It can point to a profile, personal website or project. Without a URL, the name remains plain text. The legacy `site.github` field still works as a fallback when `site.url` is omitted; it retains its HTTPS GitHub validation. There is no separate GitHub button.
 
 ## Catalog objects
 
