@@ -283,7 +283,7 @@ $('search').addEventListener('input',event=>{state.query=event.target.value;upda
 $('range').addEventListener('change',event=>{state.range=event.target.value;updateURL();if(data)renderMain();});
 for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>{state.view=view;updateURL();if(data)renderMain();});
 $('share').addEventListener('click',async()=>{
-  try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='↗ Share view';},2000); }
+  try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
   catch { window.prompt('Copy this view’s link:',location.href); }
 });
 // Load once per page visit. New YAML data and today's date appear on reload.
