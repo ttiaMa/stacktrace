@@ -117,3 +117,17 @@ test('opening an old entry URL starts unselected and empty timeline clicks clear
   assert.equal(block.attrs['aria-pressed'],'false');
   assert.equal(app.nodes.timeline.scrollLeft,left);
 });
+
+test('icon aliases distinguish harnesses and fall back on missing files or unknown names',()=>{
+  const app=setup([]);
+  for (const [name,key] of [['GPT Sol 5.6','openai'],['Opus 5','claude'],['Claude Code','claudecode'],['Pi','pi'],['Hermes Agent','hermesagent']]) {
+    app.context.name=name;
+    assert.equal(vm.runInContext('iconKey(name)',app.context),key);
+  }
+  const icon=vm.runInContext("entityIcon({name:'Pi',kind:'harness'})",app.context);
+  icon.children[1].events.load();
+  assert.equal(icon.children[0].hidden,true);
+  icon.children[1].events.error();
+  assert.equal(icon.children[0].hidden,false);
+  assert.equal(vm.runInContext("entityIcon({name:'My unknown tool',kind:'harness'}).children.length",app.context),1);
+});

@@ -36,13 +36,37 @@ function entities(entry) {
     ...(entry.harness ? [{kind:'harness',id:entry.harness,...data.harnesses[entry.harness]}] : [])];
 }
 function entityText(entity) { return entity.icon+' '+entity.name+(entity.role ? ' · '+entity.role : ''); }
+// Match names, not version IDs; keep specific harnesses before model families.
+const ICON_NAMES = [
+  [/\bclaude[\s-]*code\b/i,'claudecode'], [/\bcodex\b/i,'codex'],
+  [/\bcursor\b/i,'cursor'], [/\bhermes(?:[\s-]*agent)?\b/i,'hermesagent'],
+  [/\bpi(?:[\s-]*agent)?\b/i,'pi'], [/\bai[\s-]*studio\b/i,'aistudio'],
+  [/\bollama\b/i,'ollama'], [/\b(?:claude|opus|sonnet|haiku)\b/i,'claude'],
+  [/\b(?:gpt|chatgpt|openai|sol|o[134])\b/i,'openai'], [/\bgemini\b/i,'gemini'],
+  [/\bdeepseek\b/i,'deepseek'], [/\bqwen\b/i,'qwen'], [/\b(?:llama|meta)\b/i,'meta'],
+  [/\bgrok\b/i,'grok'], [/\b(?:mistral|codestral)\b/i,'mistral'],
+  [/\bcopilot\b/i,'githubcopilot'], [/\bopenclaw\b/i,'openclaw']
+];
+function iconKey(name) { return ICON_NAMES.find(([pattern])=>pattern.test(name))?.[1]; }
+function entityIcon(entity) {
+  const wrapper=el('span','brand-symbol'); wrapper.setAttribute('aria-hidden','true');
+  const fallback=el('span','',entity.kind==='model'?'◇':'▣'); wrapper.append(fallback);
+  const key=iconKey(entity.name);
+  if (key) {
+    const img=el('img'); img.alt=''; img.hidden=true;
+    img.addEventListener('load',()=>{img.hidden=false;fallback.hidden=true;});
+    img.addEventListener('error',()=>{img.hidden=true;fallback.hidden=false;});
+    img.src='/icons/'+key+'.svg'; wrapper.append(img);
+  }
+  return wrapper;
+}
 function active(entry) { return entry.start <= data.today && (!entry.end || entry.end >= data.today); }
 function end(entry) { return parseDate(entry.end || (entry.start > data.today ? entry.start : data.today)) + DAY; }
 function badges(entry) {
   const wrapper = el('div','badges');
   for (const entity of entities(entry)) {
     const badge = color(el('span','badge'), entity.color);
-    badge.append(el('small','',entity.kind.toUpperCase()), document.createTextNode(entityText(entity)));
+    badge.append(el('small','',entity.kind.toUpperCase()), entityIcon(entity), document.createTextNode(entity.name+(entity.role?' · '+entity.role:'')));
     wrapper.append(badge);
   }
   return wrapper;
@@ -57,7 +81,7 @@ function renderOverview() {
       if (seen.has(key)) continue;
       seen.add(key);
       const item = el('div','current-item');
-      item.append(color(el('span','entity-icon',entity.icon),entity.color));
+      const icon=color(el('span','entity-icon'),entity.color); icon.append(entityIcon(entity)); item.append(icon);
       const label = el('div'); label.append(el('div','entity-name',entity.name),el('p','entity-kind',entity.kind)); item.append(label); current.append(item);
     }
   }
@@ -145,7 +169,7 @@ function renderTimeline(entries) {
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
         const strip = color(el('span','period-entity '+entity.kind+(entity.role?' has-role':'')),entity.color);
-        strip.append(el('span','entity-label',entity.icon+' '+entity.name));
+        const label=el('span','entity-label'); label.append(entityIcon(entity),document.createTextNode(entity.name)); strip.append(label);
         if (entity.role) strip.append(el('span','entity-role',entity.role));
         block.append(strip);
       }
