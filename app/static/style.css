@@ -29,14 +29,13 @@
 #timeline-position{accent-color:var(--accent);cursor:pointer;flex:1;min-width:40px;padding:0}
 #visible-dates{margin:8px 0 0;text-align:right}
 .period-entity{height:24px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center}
-.entity-label,.entity-role{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.entity-role{font-size:9px;opacity:.85;margin-top:3px}
+.entity-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entity-role{font-size:9px;opacity:.85}
 
 /* Keep labels visible when a long period starts outside the scrolled viewport. */
 .period-block,.period-entity{overflow:clip}
-.period-title,.entity-label,.entity-role{position:sticky;left:158px;width:max-content;max-width:min(100%,var(--visible-label-width,100%))}
+.period-title,.entity-label{position:sticky;left:158px;width:max-content;max-width:min(100%,var(--visible-label-width,100%))}
 
-.period-entity.has-role{height:34px}
 .period-block{display:flex;flex-direction:column;justify-content:flex-start}
 .period-title{flex-shrink:0}
 

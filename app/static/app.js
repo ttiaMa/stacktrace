@@ -156,7 +156,7 @@ function renderTimeline(entries) {
       let lane = lanes.findIndex(until => until <= left);
       if (lane === -1) lane = lanes.length;
       lanes[lane] = left+width;
-      const height = 30 + entities(entry).reduce((total,entity)=>total+(entity.role ? 34 : 24),0);
+      const height = 30 + entities(entry).length * 24;
       laneHeights[lane] = Math.max(laneHeights[lane] || 0,height);
       const block = el('button','period-block'+(!entry.end?' ongoing':''));
       (laneBlocks[lane] ||= []).push(block);
@@ -168,9 +168,10 @@ function renderTimeline(entries) {
       block.title = description; block.setAttribute('aria-label', description);
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
-        const strip = color(el('span','period-entity '+entity.kind+(entity.role?' has-role':'')),entity.color);
-        const label=el('span','entity-label'); label.append(entityIcon(entity),document.createTextNode(entity.name)); strip.append(label);
-        if (entity.role) strip.append(el('span','entity-role',entity.role));
+        const strip = color(el('span','period-entity '+entity.kind),entity.color);
+        const label=el('span','entity-label'); label.append(entityIcon(entity),document.createTextNode(entity.name));
+        if (entity.role) label.append(el('span','entity-role',' · '+entity.role));
+        strip.append(label);
         block.append(strip);
       }
       block.addEventListener('click',()=>choose(entry)); track.append(block);
