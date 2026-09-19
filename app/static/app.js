@@ -245,6 +245,7 @@ function renderMain() {
   $('zoom-control').hidden=state.view!=='timeline';
   $('timeline-view').setAttribute('aria-pressed',String(state.view==='timeline'));
   $('journal-view').setAttribute('aria-pressed',String(state.view==='journal'));
+  $('view-switch').dataset.view=state.view;
   if (state.view==='timeline') renderTimeline(entries); else renderJournal(entries);
 }
 function switchView(view) {
