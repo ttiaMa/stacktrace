@@ -8,7 +8,7 @@
 | `site` | mapping | Optional `title`, `description`, `author`; defaults supplied. |
 | `models` | mapping | Model IDs → catalog objects. |
 | `harnesses` | mapping | Harness IDs → catalog objects. |
-| `categories` | mapping | User-defined activity IDs → catalog objects. |
+| `categories` | mapping | User-defined activity IDs → catalog objects; each activity is a timeline row, in declaration order. |
 | `entries` | list | Usage periods. |
 
 Catalogs and entries default to empty. Only documented keys are accepted. IDs use 1–80 ASCII letters, digits, `_` or `-`. Catalog IDs are independent; entry IDs must be unique. Explicit text values must be nonblank and at most 4,000 characters; omit optional text instead of writing empty strings. YAML anchors/aliases and duplicate keys are rejected.
@@ -41,18 +41,19 @@ Adoption stages can be custom categories: experimental, production, retired, etc
 
 | Key | Required | Meaning |
 | --- | --- | --- |
-| `id` | Yes | Stable unique ID, also used in share URLs. |
+| `id` | Yes | Stable unique ID for the period. |
 | `title` | Yes | Short period label. |
 | `start` | Yes | `YYYY-MM-DD`, quoted or native YAML date. |
 | `end` | No | Inclusive date ≥ start. Omit or use `null` for ongoing. |
-| `model` | Model and/or harness | Reference to a model ID. |
+| `model` | Model(s) and/or harness | Single model ID; mutually exclusive with `models`. |
+| `models` | Model(s) and/or harness | Non-empty list of up to 30 mappings: required `model` ID and optional `role` text. |
 | `harness` | Model and/or harness | Reference to a harness ID. |
 | `category` | No | Category ID; defaults to Uncategorized. |
 | `notes` | No | Plain text; `|` for multiline. No HTML/Markdown rendering. |
 | `tags` | No | List of up to 30 text labels. |
 | `url` | No | HTTP or HTTPS link to related work. |
 
-With both references, the entry means using that model **through that harness** during the interval. Create more entries for different pairs, overlaps, interruptions or switches. Adjacent periods are not implicitly merged. Open periods advance with today; a future open period is drawn as one planned day until it starts. Select a short bar via the row title when the text cannot fit.
+With model references and a harness, the entry means using those models **through that shared harness** during the interval. A legacy `model` entry remains supported. Each `models` item accepts only `model` and `role`; references and role text use the same validation as other fields. Models may share a role, or the same model may appear with different roles. Create more entries for different pairs, overlaps, interruptions or switches. Adjacent periods are not implicitly merged. Open periods advance with the server date when the page is loaded or reloaded; a future open period is drawn as one planned day until it starts. Each activity has one row: non-overlapping periods reuse a lane, while concurrent periods use parallel lanes inside that same row. Each lane takes the height of its own tallest block, independently of other lanes in the activity. Uncategorized entries share a final row. Titles stay attached to their period blocks; select a block for its full title, notes and project link. For short periods use the Months scale, keyboard focus, search or Journal. Very short blocks have a minimum clickable width and may need separate lanes when those visible widths overlap.
 
 ## Independent lifetimes
 
@@ -74,3 +75,28 @@ entries:
 ```
 
 Define the referenced catalogs separately. Both models overlap February 1–15; the editor's lifetime is independent.
+
+## Two models, one workflow
+
+```yaml
+entries:
+  - id: paired-coding
+    title: A lightweight and a deep coding assistant
+    start: 2026-07-01
+    harness: my-editor
+    category: code
+    models:
+      - model: model-a
+        role: Light coding
+      - model: model-b
+        role: Heavy coding
+    notes: |
+      Small fixes go to the fast model; complex changes get a deeper review.
+      Both are part of the same project workflow in the same editor.
+```
+
+Define the referenced models, harness and category in their catalogs. The period stays one block in the Code activity, with a strip for each model and one shared harness strip. Roles also appear in details and Journal, and are searchable. Overview totals count distinct model IDs, not roles.
+
+## Navigating long histories
+
+Months is the default scale: its spacing stays fixed as years are added. The timeline initially opens at the latest end with no period selected, including when an older link contains an entry parameter. Selection is temporary: click a block to open its story, or empty timeline space to deselect it. The slider, arrows, horizontal scrolling and Latest button navigate the history. Zooming preserves the visible time or keeps the latest edge when already there. There is no automatic polling: YAML changes and the current date are loaded only when you open or reload the page. Changing filters resets to the latest matching history (or the selected matching period). Years is a compact scale; Fit history intentionally compresses the entire history and may shorten labels. Full text is always available in details and Journal.

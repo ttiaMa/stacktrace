@@ -18,6 +18,22 @@ class ValidationTests(unittest.TestCase):
     def test_harness_only_and_overlap(self):
         self.base['entries'].append({'id':'two','title':'Harness only','start':'2026-01-01','harness':'h'})
         self.assertEqual(len(normalize(self.base)['entries']),2)
+    def test_multiple_models_share_one_period(self):
+        entry = self.base['entries'][0]
+        entry.pop('model')
+        entry.update(harness='h', models=[{'model':'m','role':'Light coding'}, {'model':'m','role':'Heavy coding'}])
+        result = normalize(self.base)['entries']
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['models'][1], {'model':'m','role':'Heavy coding'})
+        self.assertEqual(result[0]['harness'], 'h')
+    def test_reject_invalid_multiple_models(self):
+        self.base['entries'][0].pop('model')
+        for refs in [[], 'm', ['m'], [{'model':'missing'}], [{'model':'m','role':''}], [{'model':'m','unknown':True}], [{'model':'m'}]*31]:
+            with self.subTest(refs=refs):
+                self.base['entries'][0]['models'] = refs
+                with self.assertRaises(ConfigError): normalize(self.base)
+        self.base['entries'][0].update(model='m', models=[{'model':'m'}])
+        with self.assertRaises(ConfigError): normalize(self.base)
     def test_date_validation(self):
         for start,end in [('2026-02-30',None),('01-01-2026',None),('2026-01-02','2026-01-01')]:
             with self.subTest(start=start,end=end):
@@ -40,17 +56,19 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaises(ConfigError): normalize(self.base)
     def test_reject_alias_duplicate_and_python_object(self):
         for content in ['version: 1\nversion: 1','x: &x [a]\ny: *x','!!python/object/apply:os.system [echo bad]']:
-            with tempfile.NamedTemporaryFile(mode='w') as file:
-                file.write(content);file.flush()
-                with self.assertRaises(ConfigError): load(file.name)
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / 'invalid.yaml'
+                path.write_text(content, encoding='utf-8')
+                with self.assertRaises(ConfigError): load(path)
     def test_example_native_dates(self):
         result,revision=load(ROOT/'config/timeline.yaml')
-        self.assertEqual(result['entries'][0]['start'],'2026-01-05')
+        self.assertEqual(result['entries'][0]['start'],'2023-04-01')
         self.assertEqual(len(revision),64)
     def test_size_limit(self):
-        with tempfile.NamedTemporaryFile(mode='w') as file:
-            file.write('x'*1_048_577);file.flush()
-            with self.assertRaises(ConfigError): load(file.name)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'large.yaml'
+            path.write_text('x'*1_048_577, encoding='utf-8')
+            with self.assertRaises(ConfigError): load(path)
 
 class ServerTests(unittest.TestCase):
     def setUp(self):

@@ -7,27 +7,29 @@
 </head>
 <body>
 <div class="shell">
-<header><a class="brand" href="/" aria-label="Stacktrace home"><span class="brand-icon">≋</span> STACKTRACE <span class="version">/ journal</span></a><div class="header-right"><span id="clock"></span><button id="share">↗ Share view</button></div></header>
+<header><a class="brand" href="/" aria-label="Stacktrace home"><svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 10 C12 3 20 17 26 10 M6 16 C12 9 20 23 26 16 M6 22 C12 15 20 29 26 22"/></svg><span class="brand-name">STACKTRACE</span> <span class="version">/ journal</span></a><div class="header-right"><button id="share">↗ Share view</button></div></header>
 <main>
-<section class="intro"><div><p class="eyebrow" id="author">PERSONAL AI JOURNAL</p><h1 id="title">My AI stack<span>.</span></h1><p id="description">Tools change. Keep the story.</p></div><div class="intro-mark" aria-hidden="true">[ ai ]</div></section>
+<section class="intro"><div><p class="eyebrow" id="author">PERSONAL AI JOURNAL</p><h1 id="title">My AI stack<span>.</span></h1><p id="description">Tools change. Keep the story.</p></div><div class="intro-mark" aria-hidden="true">[ stacktrace ]</div></section>
 <div id="notice" role="status" hidden></div>
 <div class="workspace">
-<aside>
-<section class="panel"><div class="panel-heading"><h2>In rotation</h2><span class="live-dot" title="Active today"></span></div><p class="caption">Your stack, right now</p><div id="current"></div></section>
-<section class="panel"><h2>By the numbers</h2><div id="stats"></div></section>
-<section class="panel guide"><h2>Reading the timeline</h2><p><span class="sample model"></span> Model · the intelligence</p><p><span class="sample harness"></span> Harness · the environment</p><p class="caption">One row, one period of use.<br>Parallel rows show overlapping tools.<br>Dashed ends are still in rotation.</p></section>
-</aside>
+
 <div class="main-column">
 <section class="panel timeline-panel">
-<div class="panel-heading"><div><h2>Stack timeline</h2><p class="caption">A record of what you use, and when.</p></div><div class="segmented" aria-label="View"><button id="timeline-view" aria-pressed="true">Timeline</button><button id="journal-view" aria-pressed="false">Journal</button></div></div>
-<div class="toolbar"><div id="categories" class="chips" aria-label="Category filters"></div><div class="controls"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a tool or note…" aria-label="Search timeline"></label><select id="range" aria-label="Time range"><option value="all">All time</option><option value="365">Last year</option><option value="90">Last 90 days</option></select></div></div>
+<div class="panel-heading"><div><h2>Stack timeline</h2><p class="caption">Years of tools, grouped by what you do.</p></div><div class="segmented" aria-label="View"><button id="timeline-view" aria-pressed="true">Timeline</button><button id="journal-view" aria-pressed="false">Journal</button></div></div>
+<div class="toolbar"><div id="categories" class="chips" aria-label="Category filters"></div><div class="controls"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a tool or note…" aria-label="Search timeline"></label><select id="range" aria-label="Time range"><option value="all">All time</option><option value="365">Last year</option><option value="90">Last 90 days</option></select><select id="zoom" aria-label="Timeline scale"><option value="years">Years</option><option value="detail">Months</option><option value="fit">Fit history</option></select></div></div>
+<div id="timeline-nav" class="timeline-nav" hidden><div class="history-controls"><button id="earlier" aria-label="Earlier periods">←</button><input id="timeline-position" type="range" min="0" max="100" step="1" value="100" aria-label="Browse timeline history"><button id="later" aria-label="Later periods">→</button><button id="latest">Latest</button></div><p id="visible-dates" class="caption"></p></div>
 <div id="results-count" class="caption"></div><div id="timeline" tabindex="0" aria-label="Scrollable timeline"></div><div id="journal" hidden></div>
 <div class="timeline-foot"><span><span class="live-dot"></span> TODAY <span id="today-label"></span></span><span>Click a period to read its story ↗</span></div>
 </section>
 <section class="panel" id="details"><div class="empty-detail"><span>↖</span><div><h2>Every switch has a story.</h2><p class="caption">Select a period to see its models, harness, notes and links.</p></div></div></section>
+<details class="overview panel"><summary>Stack overview <span class="caption">In rotation · By the numbers · Reading the timeline</span></summary><div class="overview-grid">
+<section class="panel"><div class="panel-heading"><h2>In rotation</h2><span class="live-dot" title="Active today"></span></div><p class="caption">Your stack, right now</p><div id="current"></div></section>
+<section class="panel"><h2>By the numbers</h2><div id="stats"></div></section>
+<section class="panel guide"><h2>Reading the timeline</h2><p><span class="sample model"></span> Model · the intelligence</p><p><span class="sample harness"></span> Harness · the environment</p><p class="caption">One row per activity. Overlapping periods share that row in parallel lanes; later periods reuse the space.<br>Dashed ends mark open periods, including planned use.</p></section>
+</div></details>
 </div>
 </div>
 </main>
-<footer><span>STACKTRACE <span class="muted">/ a small history of your tools</span></span><span>YAML powered · self hosted · no tracking</span></footer>
+<footer><span>STACKTRACE <span class="muted">/ a small history of your tools</span></span><span class="footer-links"><span>YAML powered · self hosted · no tracking</span><a class="create-stacktrace" href="https://github.com/ttiaMa/stacktrace" target="_blank" rel="noopener noreferrer">Create your stacktrace ↗</a></span></footer>
 </div>
 </body></html>

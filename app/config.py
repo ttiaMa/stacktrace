@@ -83,7 +83,7 @@ def normalize(raw):
     ids = set()
     for index, entry in enumerate(entries):
         p = f'entries[{index}]'
-        entry = obj(entry, p, {'id', 'title', 'start', 'end', 'model', 'harness', 'category', 'notes', 'tags', 'url'})
+        entry = obj(entry, p, {'id', 'title', 'start', 'end', 'model', 'models', 'harness', 'category', 'notes', 'tags', 'url'})
         ident = string(entry.get('id'), p + '.id')
         check(bool(re.fullmatch(r'[a-zA-Z0-9_-]{1,80}', ident)) and ident not in ids, p + ': invalid or duplicate id')
         ids.add(ident)
@@ -94,7 +94,18 @@ def normalize(raw):
                'url': string(entry.get('url'), p + '.url', '')}
         check(out['end'] is None or out['end'] >= out['start'], p + ': end precedes start')
         check(not out['url'] or (out['url'].startswith(('https://', 'http://')) and not any(c.isspace() for c in out['url'])), p + '.url: use http(s)')
-        check(entry.get('model') or entry.get('harness'), p + ': specify model and/or harness')
+        check(not ('model' in entry and 'models' in entry), p + ': use model or models, not both')
+        check(entry.get('model') or entry.get('models') or entry.get('harness'), p + ': specify model(s) and/or harness')
+        model_refs = entry.get('models', [])
+        check(isinstance(model_refs, list) and len(model_refs) <= 30, p + '.models: expected list, max 30')
+        check('models' not in entry or model_refs, p + '.models: must not be empty')
+        out['models'] = []
+        for model_index, model_ref in enumerate(model_refs):
+            mp = f'{p}.models[{model_index}]'
+            model_ref = obj(model_ref, mp, {'model', 'role'})
+            ref = model_ref.get('model')
+            check(isinstance(ref, str) and ref in result['models'], mp + ': unknown model reference')
+            out['models'].append({'model': ref, 'role': string(model_ref.get('role'), mp + '.role', '')})
         for field, catalog in [('model', 'models'), ('harness', 'harnesses'), ('category', 'categories')]:
             ref = entry.get(field)
             check(ref is None or isinstance(ref, str) and ref in result[catalog], p + f'.{field}: unknown reference')

@@ -1,5 +1,5 @@
 # Illustrative data, not a claim about the author's actual history.
-# Edit this file; open the page to see changes within 30 seconds.
+# Edit this file; reload the page to see changes.
 version: 1
 site:
   title: My evolving AI stack
@@ -46,22 +46,86 @@ harnesses:
     name: AI Studio
     icon: web
     color: '#90aac8'
+  hermes:
+    name: Hermes Agent
+    icon: chat
+    color: '#c7ad83'
+  pi:
+    name: Pi
+    icon: terminal
+    color: '#b5b986'
   ollama:
     name: Ollama
     icon: terminal
     color: '#b5b986'
 
+# Each category becomes one timeline row, in this order.
+# Reuse its ID across entries: overlaps stay inside the same activity row.
 categories:
   code: {name: Code, icon: code}
   chat: {name: Chat, icon: chat}
   research: {name: Research, icon: research}
   experiments: {name: Experiments, icon: experiment}
 
+# Each entry is still a story: title, dates, model/harness, notes and optional URL.
+# Illustrative multi-year history: sequential periods, overlaps and ongoing use.
 entries:
+  - id: first-assistant
+    title: Small scripts, one conversation at a time
+    start: 2023-04-01
+    end: 2023-12-15
+    model: gpt
+    harness: chatgpt
+    category: code
+    notes: |
+      My first use was a personal library organizer: naming files, checking
+      metadata and writing small scripts. I copied changes into the editor
+      and reviewed each one. Useful for learning, slower for larger changes.
+
+      This period ended when I wanted help closer to the repository itself.
+    tags: [scripts, personal-project]
+
+  - id: early-chat
+    title: A notebook for rough ideas
+    start: 2023-06-10
+    end: 2025-12-31
+    model: gpt
+    harness: chatgpt
+    category: chat
+    notes: |
+      Drafting project outlines and finding clearer explanations.
+      Kept implementation in the Code activity; this was space to think aloud.
+    tags: [writing, planning]
+
+  - id: research-trial
+    title: Comparing technical approaches
+    start: 2024-06-01
+    end: 2025-10-31
+    model: gemini
+    harness: studio
+    category: research
+    notes: |
+      Compared storage and search approaches for a personal archive.
+      Saved the original sources alongside the notes to revisit decisions later.
+    url: https://example.com/projects/personal-archive
+    tags: [research, personal-archive]
+
+  - id: first-local-trial
+    title: An offline search prototype
+    start: 2024-09-01
+    end: 2024-11-30
+    model: local
+    harness: ollama
+    category: experiments
+    notes: |
+      Tested an offline assistant against a small set of personal documents.
+      The experiment was useful, but I paused it until I had a clearer workload.
+    tags: [local, prototype]
+
   - id: editor-first
     title: The editor-first workflow
-    start: 2026-01-05
-    end: 2026-04-18
+    start: 2024-01-05
+    end: 2025-04-18
     model: sonnet
     harness: cursor
     category: code
@@ -73,6 +137,7 @@ entries:
   - id: thinking-partner
     title: A thinking partner
     start: 2026-01-20
+    end: 2026-07-31
     model: gpt
     harness: chatgpt
     category: chat
@@ -81,7 +146,7 @@ entries:
 
   - id: terminal-agents
     title: Moving into the terminal
-    start: 2026-03-10
+    start: 2025-03-10
     end: 2026-07-04
     model: sonnet
     harness: claude-code
@@ -113,18 +178,52 @@ entries:
   - id: repository-work
     title: Repository-wide work
     start: 2026-06-12
-    model: gpt
-    harness: codex
+    # Both models share this harness, period and story.
+    models:
+      - model: gpt
+        role: Light coding
+      - model: sonnet
+        role: Heavy coding
+    harness: cursor
     category: code
     notes: |
-      A new daily workflow for implementation, tests and review.
+      One editor, two models: quick implementation and tests with GPT,
+      deeper refactors and review with Sonnet.
       Overlapped with the previous harness before making the switch.
-    tags: [daily-driver, agents]
+    url: https://example.com/projects/personal-dashboard
+    tags: [daily-driver, agents, personal-dashboard]
 
   - id: harness-only
     title: Keeping the editor around
     start: 2026-07-05
+    end: 2026-08-14
     harness: cursor
     category: code
     notes: "A harness-only period: model selection changes too often to record one model."
     tags: [review]
+
+  - id: hermes-conversations
+    title: A continuing conversation with Hermes
+    start: 2026-08-01
+    model: gpt
+    harness: hermes
+    category: chat
+    notes: |
+      Trying Hermes Agent for ongoing project conversations: collecting ideas,
+      revisiting decisions and turning rough notes into a plan for the next session.
+      This is the conversational side of the workflow, before opening the repository.
+    url: https://hermes-agent.nousresearch.com/
+    tags: [chat, planning, personal-assistant]
+
+  - id: pi-coding
+    title: A smaller coding harness to make my own
+    start: 2026-08-15
+    model: sonnet
+    harness: pi
+    category: code
+    notes: |
+      Exploring Pi for focused coding sessions in the terminal: small patches,
+      tests and extensions tailored to a personal dashboard project.
+      Keeping the multi-model editor workflow alongside it to compare how each feels.
+    url: https://pi.dev/
+    tags: [coding, terminal, extensions]
