@@ -24,7 +24,7 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
       if (!nodes[id]) {
         nodes[id]=new Node();
         if (id==='range' || id==='zoom') {
-          const values=id==='range'?[['all','All time'],['365','Last year'],['90','Last 90 days']]:[['years','Years'],['detail','Months'],['fit','Fit history']];
+          const values=id==='range'?[['all','All time'],['365','Last year'],['90','Last 90 days']]:[['detail','Months'],['years','Years'],['fit','Fit history']];
           nodes[id].options=values.map(([value,textContent])=>({value,textContent}));
         }
       }
