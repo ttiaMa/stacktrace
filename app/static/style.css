@@ -97,3 +97,9 @@
 @media(prefers-reduced-motion:reduce){.segmented::before{transition:none}}
 
 .author-link{color:inherit;text-decoration:underline;text-decoration-color:#b5b98670;text-underline-offset:4px}.author-link:hover{text-decoration-color:currentColor}
+
+.timeline-panel>.toolbar{margin:0 0 10px;flex-direction:column;align-items:stretch;gap:14px}
+.journal-topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.journal-topbar .chips{flex:1 1 360px}
+.journal-topbar .segmented{margin-left:auto}
+@media(max-width:540px){.journal-topbar .chips{flex-basis:100%;order:2}}
