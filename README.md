@@ -88,20 +88,12 @@ The roles are optional, searchable labels; both models share the entry's dates, 
 
 ## Features
 
-- Full-width timeline with one row per activity and automatic lanes for overlapping periods, each sized to its own tallest block.
-- Each selectable period contains its title, solid model strip and striped harness strip.
-- Months is the default fixed scale, sized for model changes every one or two months. History grows horizontally and opens at its latest end instead of shrinking blocks.
-- Browse older periods with the history slider, arrows or horizontal scrolling; Latest returns to the right edge. Years and Fit history provide optional overviews.
-- Multiple models with optional role labels can share one period, harness and story.
-- Collapsible stack overview below the story, with active tools, totals and a reading guide.
-- All-time, last-year and last-90-days views; category and text filters.
-- Search across titles, notes, tags, category names, tool names and model roles.
-- Journal view and selectable details with notes and project links.
-- Share URL retains filters, timeline scale and view. Each page visit starts with no period selected; click empty timeline space to clear a selection.
-- Open-ended, completed, single-day and future/planned periods.
-- Provider color defaults, named icon shortcuts and custom Unicode icons.
-- Keyboard-operable controls; responsive layout with a scrollable timeline on mobile.
-- Invalid edits keep the last valid configuration in memory and show a warning. The health check becomes unhealthy; a fresh start with invalid YAML returns 503.
+- Multi-year activity timeline with overlapping workflows and adjustable time scales.
+- Journal entries with titles, stories, tags and links to related work.
+- Multiple models and roles within a shared harness and period.
+- Search, activity filters and shareable views.
+- Current stack and all-time usage statistics.
+- One editable YAML file, automatic local brand icons, and lightweight self-hosting.
 
 Dates are inclusive calendar dates. Today is the server's UTC date. Future entries appear in all-time view but never count as active. Rolling windows include today and exclude future periods. Overview totals always describe the complete history. The demo spans 2023–2026 and illustrates successive periods, overlaps and two models sharing one editor period, plus [Hermes Agent](https://hermes-agent.nousresearch.com/) for chat and [Pi](https://pi.dev/) for coding. Short blocks retain a full tooltip and keyboard-accessible details; use Months scale, search or Journal to find brief experiments in a long history.
 
