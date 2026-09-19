@@ -66,7 +66,7 @@ function badges(entry) {
   const wrapper = el('div','badges');
   for (const entity of entities(entry)) {
     const badge = color(el('span','badge'), entity.color);
-    badge.append(el('small','',entity.kind.toUpperCase()), entityIcon(entity), document.createTextNode(entity.name+(entity.role?' · '+entity.role:'')));
+    badge.append(el('small','',entity.kind.toUpperCase()), entityIcon(entity), el('span','badge-label',entity.name+(entity.role?' · '+entity.role:'')));
     wrapper.append(badge);
   }
   return wrapper;
@@ -166,8 +166,9 @@ function renderTimeline(entries) {
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
         const strip = color(el('span','period-entity '+entity.kind),entity.color);
-        const label=el('span','entity-label'); label.append(entityIcon(entity),document.createTextNode(entity.name));
-        if (entity.role) label.append(el('span','entity-role',' · '+entity.role));
+        const label=el('span','entity-label'), copy=el('span','entity-copy',entity.name);
+        if (entity.role) copy.append(el('span','entity-role',' · '+entity.role));
+        label.append(entityIcon(entity),copy);
         strip.append(label);
         block.append(strip);
       }
