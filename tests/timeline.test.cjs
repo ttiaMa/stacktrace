@@ -10,12 +10,26 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
     append(...nodes) { this.children.push(...nodes); }
     replaceChildren(...nodes) { this.children=nodes; }
     setAttribute(key,value) { this.attrs[key]=value; }
-    addEventListener(type, handler) { this.events[type]=handler; }
+    getAttribute(key) { return this.attrs[key]; }
+    removeAttribute(key) { delete this.attrs[key]; }
+    focus() { this.focused=true; }
+    contains(node) { return node===this || this.children.some(child=>child?.contains?.(node)); }
+    dispatchEvent(event) { Object.defineProperty(event,'target',{value:this}); this.events[event.type]?.(event); }
+    addEventListener(type, handler) { const previous=this.events[type]; this.events[type]=event=>{previous?.(event);handler(event);}; }
   }
   const nodes = {};
-  const context = vm.createContext({URLSearchParams, Intl, Date, Math, Set,
+  const context = vm.createContext({URLSearchParams, Intl, Date, Math, Set, Event,
     location:{search,pathname:'/'}, history:{replaceState(){}}, window:{addEventListener(){}},
-    document:{events:{},addEventListener(type,handler){this.events[type]=handler;},getElementById:id=>nodes[id] ||= new Node(),createElement:()=>new Node(),createTextNode:text=>text,querySelectorAll:()=>{
+    document:{events:{},addEventListener(type,handler){const previous=this.events[type];this.events[type]=event=>{previous?.(event);handler(event);};},getElementById:id=>{
+      if (!nodes[id]) {
+        nodes[id]=new Node();
+        if (id==='range' || id==='zoom') {
+          const values=id==='range'?[['all','All time'],['365','Last year'],['90','Last 90 days']]:[['years','Years'],['detail','Months'],['fit','Fit history']];
+          nodes[id].options=values.map(([value,textContent])=>({value,textContent}));
+        }
+      }
+      return nodes[id];
+    },createElement:()=>new Node(),createTextNode:text=>text,querySelectorAll:()=>{
       const visit=node=>[...(node.className?.startsWith('period-block')?[node]:[]),...(node.children || []).flatMap(visit)];
       return visit(nodes.timeline);
     }},
@@ -188,4 +202,29 @@ test('slider, Latest and arrows share exact bounds at every timeline scale',()=>
     app.nodes.latest.events.click();
     assert.equal(app.nodes.timeline.scrollLeft,position);
   }
+});
+
+test('filter menus support keyboard selection, cancellation and outside dismissal',()=>{
+  const app=setup([{id:'a',title:'History',start:'2024-01-01'}]);
+  const [trigger,list]=app.nodes['range-control'].children;
+  const key=key=>trigger.events.keydown({key,preventDefault(){}});
+  key('Enter'); key('End');
+  assert.equal(list.hidden,false);
+  assert.equal(app.nodes.range.value,'all');
+  key('Escape');
+  assert.equal(list.hidden,true);
+  assert.equal(app.nodes.range.value,'all');
+  key('Enter'); key('End'); key('Enter');
+  assert.equal(list.hidden,true);
+  assert.equal(app.nodes.range.value,'90');
+  assert.equal(vm.runInContext('state.range',app.context),'90');
+  assert.equal(trigger.textContent,'Last 90 days');
+  assert.equal(list.children[2].attrs['aria-selected'],'true');
+  trigger.events.click();
+  app.context.document.events.click({target:{}});
+  assert.equal(list.hidden,true);
+  trigger.events.click(); list.children[0].events.click();
+  assert.equal(vm.runInContext('state.range',app.context),'all');
+  vm.runInContext("state.view='journal';renderMain()",app.context);
+  assert.equal(app.nodes['zoom-control'].hidden,true);
 });

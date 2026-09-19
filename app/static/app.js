@@ -240,7 +240,7 @@ function renderMain() {
   $('timeline').hidden=state.view!=='timeline'; $('journal').hidden=state.view!=='journal';
   $('details').hidden=state.view==='journal';
   $('timeline-nav').hidden=state.view!=='timeline' || !entries.length;
-  $('zoom').hidden=state.view!=='timeline';
+  $('zoom-control').hidden=state.view!=='timeline';
   $('timeline-view').setAttribute('aria-pressed',String(state.view==='timeline'));
   $('journal-view').setAttribute('aria-pressed',String(state.view==='journal'));
   if (state.view==='timeline') renderTimeline(entries); else renderJournal(entries);
@@ -276,6 +276,68 @@ function setInfo(open,mode='') {
   $('info-toggle').setAttribute('aria-expanded',String(open));
   infoMode=open?mode:'';
 }
+function enhanceSelect(id) {
+  const select=$(id), wrapper=$(id+'-control');
+  const options=Array.from(select.options);
+  const trigger=el('button','select-trigger'), list=el('div','select-options');
+  const label=select.getAttribute('aria-label');
+  trigger.id=id+'-trigger'; trigger.type='button';
+  trigger.setAttribute('role','combobox'); trigger.setAttribute('aria-label',label);
+  trigger.setAttribute('aria-haspopup','listbox'); trigger.setAttribute('aria-expanded','false');
+  list.id=id+'-options'; list.hidden=true;
+  list.setAttribute('role','listbox'); list.setAttribute('aria-label',label);
+  trigger.setAttribute('aria-controls',list.id);
+  // Keep focus on the combobox until the option's click has committed.
+  list.addEventListener('pointerdown',event=>event.preventDefault());
+  let highlighted=0;
+  const items=options.map((option,index)=>{
+    const item=el('div','select-option',option.textContent);
+    item.id=id+'-option-'+index; item.setAttribute('role','option');
+    item.addEventListener('click',()=>commit(index));
+    list.append(item); return item;
+  });
+  function highlight(index) {
+    highlighted=(index+items.length)%items.length;
+    items.forEach((item,i)=>{item.dataset.highlighted=String(i===highlighted);});
+    trigger.setAttribute('aria-activedescendant',items[highlighted].id);
+  }
+  function sync() {
+    trigger.textContent=options.find(option=>option.value===select.value).textContent;
+    items.forEach((item,index)=>item.setAttribute('aria-selected',String(options[index].value===select.value)));
+  }
+  function close() {
+    list.hidden=true; trigger.setAttribute('aria-expanded','false');
+    trigger.removeAttribute('aria-activedescendant');
+  }
+  function open() {
+    list.hidden=false; trigger.setAttribute('aria-expanded','true');
+    highlight(options.findIndex(option=>option.value===select.value));
+  }
+  function commit(index) {
+    select.value=options[index].value; sync(); close();
+    trigger.focus({preventScroll:true});
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  trigger.addEventListener('click',()=>{if(list.hidden)open();else close();});
+  trigger.addEventListener('keydown',event=>{
+    const key=event.key;
+    if (key==='Escape') { event.preventDefault(); close(); return; }
+    if (key==='Tab') { if(!list.hidden)commit(highlighted); return; }
+    if (['ArrowDown','ArrowUp','Home','End','Enter',' '].includes(key)) {
+      event.preventDefault();
+      if (list.hidden) { open(); if(key==='Home')highlight(0); if(key==='End')highlight(items.length-1); }
+      else if (key==='Enter'||key===' ') commit(highlighted);
+      else highlight(key==='Home'?0:key==='End'?items.length-1:highlighted+(key==='ArrowDown'?1:-1));
+    } else if (key.length===1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      const next=options.findIndex(option=>option.textContent.toLowerCase().startsWith(key.toLowerCase()));
+      if(next>=0) { event.preventDefault(); if(list.hidden)open(); highlight(next); }
+    }
+  });
+  wrapper.addEventListener('focusout',event=>{if(!wrapper.contains(event.relatedTarget))close();});
+  document.addEventListener('click',event=>{if(!wrapper.contains(event.target))close();});
+  select.addEventListener('change',sync);
+  sync(); select.hidden=true; wrapper.append(trigger,list);
+}
 async function refresh() {
   try {
     const response=await fetch('/api/timeline',{cache:'no-store'});
@@ -295,6 +357,7 @@ async function refresh() {
 }
 $('search').value=state.query; $('range').value=state.range;
 $('zoom').value=state.zoom;
+enhanceSelect('range'); enhanceSelect('zoom');
 $('info-toggle').addEventListener('click',()=>setInfo(infoMode!=='click','click'));
 $('info-wrap').addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setInfo(true,'hover');});
 $('info-wrap').addEventListener('pointerleave',()=>setInfo(false));
