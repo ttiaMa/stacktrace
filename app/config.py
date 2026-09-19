@@ -88,7 +88,8 @@ def normalize(raw):
             provider = string(item.get('provider'), f'{kind}.{key}.provider', 'custom')
             color = item.get('color', PRESETS.get(provider.lower(), PALETTE[index % len(PALETTE)]))
             check(isinstance(color, str) and bool(re.fullmatch(r'#[0-9a-fA-F]{6}', color)), f'{kind}.{key}.color: use #RRGGBB')
-            icon = string(item.get('icon'), f'{kind}.{key}.icon', ICONS.get(key.rstrip('s'), '◇' if kind == 'models' else '▣'))
+            default_icon = '' if kind == 'categories' else ICONS.get(key.rstrip('s'), '◇' if kind == 'models' else '▣')
+            icon = string(item.get('icon'), f'{kind}.{key}.icon', default_icon)
             result[kind][key] = {'name': string(item.get('name'), f'{kind}.{key}.name'),
                                  'color': color, 'icon': ICONS.get(icon, icon), 'provider': provider}
     def resolve(value, catalog, path):

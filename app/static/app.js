@@ -93,7 +93,7 @@ function renderOverview() {
 }
 function renderCategories() {
   $('categories').replaceChildren();
-  for (const [id, label] of [['','All activity'], ...Object.entries(data.categories).map(([key,c])=>[key,c.icon + ' ' + c.name])]) {
+  for (const [id, label] of [['','All activity'], ...Object.entries(data.categories).map(([key,c])=>[key,c.name])]) {
     const button = el('button','',label); button.setAttribute('aria-pressed',String(state.category === id));
     button.addEventListener('click',()=>{state.category=id; updateURL(); renderCategories(); renderMain();}); $('categories').append(button);
   }
@@ -131,13 +131,13 @@ function renderTimeline(entries) {
     tick.style.left=position(value)+'%'; axis.append(tick);
   }
   axisRow.append(axis); chart.append(axisRow);
-  const groups = [...Object.entries(data.categories), ['', {name:'Uncategorized', icon:'◇'}]];
+  const groups = [...Object.entries(data.categories), ['', {name:'Uncategorized'}]];
   for (const [category, info] of groups) {
     const periods = entries.filter(entry => (entry.category || '') === category);
     if (!periods.length) continue;
     const row = el('div','timeline-row');
     const label = el('div','row-label');
-    label.append(el('h3','activity-name',info.icon+' '+info.name),el('div','row-category',`${periods.length} ${periods.length === 1 ? 'period' : 'periods'}`));
+    label.append(el('h3','activity-name',info.name),el('div','row-category',`${periods.length} ${periods.length === 1 ? 'period' : 'periods'}`));
     const track = el('div','track');
     for (const tick of ticks) { const grid = el('span','gridline'); grid.style.left=tick+'%'; track.append(grid); }
     if (today>=start && today<finish) { const now = el('span','gridline today-line'); now.style.left=position(today)+'%'; track.append(now); }

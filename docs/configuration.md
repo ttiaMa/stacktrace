@@ -43,7 +43,7 @@ Provider defaults: `openai` → `#85b5ae`, `anthropic` → `#d9ac80`, `google` �
 | `web` | ◎ | `experiment` | ⚗ |
 | `production` | ◆ | `archive` | ▤ |
 
-Adoption stages can be custom categories: experimental, production, retired, etc. Release generations can be part of a model's name or tags. No lifecycle is imposed. Category symbols use local system fonts. Model and harness logos are matched by name to bundled Lobe SVGs; unknown names or missing assets use a character fallback. Legacy model/harness icon fields remain accepted, but automatic name matching controls the rendered logo.
+Adoption stages can be custom categories: experimental, production, retired, etc. Release generations can be part of a model's name or tags. No lifecycle is imposed. Category filters and row labels show the exact category name, without added icons. Legacy category icon fields remain accepted as metadata but are not displayed. Model and harness logos are matched by name to bundled Lobe SVGs; unknown names or missing assets use a character fallback. Legacy model/harness icon fields remain accepted, but automatic name matching controls the rendered logo.
 
 ## Entries
 
