@@ -14,22 +14,47 @@ Dark, quiet, dashboard-inspired design. No database, accounts, analytics, extern
 
 ## Start with Docker
 
+Download `compose.release.yaml` and `timeline.yaml` from the [latest release](https://github.com/ttiaMa/stacktrace/releases/latest). Put the timeline in `config/timeline.yaml` next to the Compose file, then run:
+
 ```sh
-docker compose up -d --build
+docker compose -f compose.release.yaml up -d
 ```
 
-Open **http://localhost:8080**. Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. Categories, search, scale and display modes use the snapshot already loaded in the browser; they do not reload the page or request new timeline data. The timeline file is mounted read-only, so atomic saves from editors work too.
+Open **http://localhost:8080**. The prebuilt image is `ghcr.io/ttiama/stacktrace:0.1`, available for Linux AMD64 and ARM64 without a registry login. No local build or repository clone is needed.
+
+Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. Categories, search, scale and display modes use the snapshot already loaded in the browser; they do not reload the page or request new timeline data. The timeline is mounted read-only. If your editor replaces the file atomically, recreate the container to refresh its file mount (`docker compose -f compose.release.yaml up -d --force-recreate`).
 
 ```sh
 # Validate configuration
-docker compose exec stacktrace python -m app.server --check
+docker compose -f compose.release.yaml exec stacktrace python -m app.server --check
 # Read configuration errors
-docker compose logs --tail=50 stacktrace
+docker compose -f compose.release.yaml logs --tail=50 stacktrace
 # Stop
-docker compose down
+docker compose -f compose.release.yaml down
 ```
 
-Change the left side of `8080:8080` in `compose.yaml` for a different host port. The default binds all host interfaces; use `127.0.0.1:8080:8080` when your reverse proxy runs directly on the host.
+Change the left side of `8080:8080` in `compose.release.yaml` for a different host port. The default binds all host interfaces; use `127.0.0.1:8080:8080` when your reverse proxy runs directly on the host.
+
+### Choose a version
+
+The release Compose file defaults to `0.1`. To select another published release, set its tag in a `.env` file beside it:
+
+```dotenv
+STACKTRACE_VERSION=0.1
+```
+
+Then pull and recreate the container:
+
+```sh
+docker compose -f compose.release.yaml pull
+docker compose -f compose.release.yaml up -d
+```
+
+Your bind-mounted YAML stays separate from the image. Pin a numbered tag for predictable upgrades and rollbacks; `latest` follows new releases. You can also pull a specific version directly with `docker pull ghcr.io/ttiama/stacktrace:0.1`.
+
+### Build from source or deploy with Coolify
+
+Clone/import this repository and use `docker compose up -d --build`. The source `compose.yaml` exposes container port **8080** to the proxy without publishing a host port; in Coolify, route your hostname to that port. For direct access without a proxy, add a `ports: ["8080:8080"]` mapping to that Compose file. Keep the live YAML outside the application checkout when redeploying.
 
 ## Your first timeline
 
@@ -113,7 +138,7 @@ Route an HTTPS hostname from your reverse proxy to container port 8080. Treat `t
 
 All supported YAML content is visible to anyone who can open your instance, including notes and project links. The raw YAML is not served. There is no login, write API or provider API access; add access control at your reverse proxy if needed.
 
-Configuration is limited to 1 MiB, 500 items per catalog and 2,000 entries. Last-valid fallback is memory-only and does not survive a restart. API and health requests revalidate the file; the browser fetches data once when the page loads, with no background polling. Reload to see YAML changes and advance the current date. Prefer atomic file saves. This package does not publish an image or create a GitHub repo.
+Configuration is limited to 1 MiB, 500 items per catalog and 2,000 entries. Last-valid fallback is memory-only and does not survive a restart. API and health requests revalidate the file; the browser fetches data once when the page loads, with no background polling. Reload to see YAML changes and advance the current date. For Docker file mounts, follow the atomic-save note above.
 
 ## Local development
 
@@ -133,10 +158,11 @@ The development server listens on `127.0.0.1:8080`. Use Docker/Gunicorn for depl
 python -m unittest discover -s tests -v
 # Optional syntax check; no npm install needed
 node --check app/static/app.js
+node --check app/static/i18n.js
 node --test tests/timeline.test.cjs
 ```
 
-CI validates configuration, runs tests, builds Docker and smoke-tests routes. See [verification notes](docs/verification.md) for local checks and remaining verification limits.
+CI validates configuration, runs tests, builds Docker and smoke-tests routes. Pushing a version tag such as `v0.1` also publishes versioned GHCR images after these checks; the tag must match `app.__version__`. See [verification notes](docs/verification.md) for local checks and remaining verification limits.
 
 ## Repository layout
 
@@ -151,7 +177,8 @@ stacktrace/
   docs/
   .github/workflows/ci.yml
   Dockerfile
-  compose.yaml
+  compose.yaml            # Source build / reverse proxy
+  compose.release.yaml    # Prebuilt, versioned image
   requirements.txt
   LICENSE
 ```

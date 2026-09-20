@@ -1,0 +1,73 @@
+name: Release image
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release version
+        id: release
+        shell: bash
+        run: |
+          tag="$GITHUB_REF_NAME"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]
+          version="${tag#v}"
+          test "$version" = "$(python -c 'from app import __version__; print(__version__)')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish versioned image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ steps.release.outputs.image }}:${{ steps.release.outputs.version }}
+            ${{ steps.release.outputs.image }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.release.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=MIT
+      - name: Verify published image
+        env:
+          IMAGE: ${{ steps.release.outputs.image }}:${{ steps.release.outputs.version }}
+          EXPECTED_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          docker pull "$IMAGE"
+          docker run -d --name released --read-only --tmpfs /tmp -p 8080:8080 "$IMAGE"
+          for attempt in $(seq 1 20); do
+            if curl --fail http://localhost:8080/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail http://localhost:8080/healthz
+          curl --fail http://localhost:8080/i18n.js --output /dev/null
+          curl --fail http://localhost:8080/api/timeline | python -c 'import json, os, sys; assert json.load(sys.stdin)["app_version"] == os.environ["EXPECTED_VERSION"]'
+      - name: Container logs
+        if: always()
+        run: docker logs released || true

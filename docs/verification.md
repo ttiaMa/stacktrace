@@ -1,3 +1,12 @@
+# Languages and release preparation — 2026-09-20
+
+- 19 Python tests and 21 Node renderer tests passed, covering all five dictionaries, schema validation, translated views, preserved authored content and the existing timeline interactions.
+- Italian and German interface labels, dates and custom scale menus were checked in the browser; the German menu was also inspected visually.
+- The release workflow runs CI before publishing Linux AMD64/ARM64 images, then pulls and smoke-tests the published image and its application version.
+- Docker is unavailable locally; container build and runtime validation are performed by GitHub Actions.
+
+Earlier notes below describe checks at their respective dates, not the current release status.
+
 # Selection and header alignment — 2026-09-19
 
 - 7 Node renderer tests passed, including no selection from old entry URLs, selecting a block, clearing selection on timeline background clicks, and preserving scroll position.
