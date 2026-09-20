@@ -61,7 +61,9 @@ def date(value, path):
 def normalize(raw):
     raw = obj(raw, 'root', {'version', 'site', 'models', 'harnesses', 'categories', 'entries'})
     check(type(raw.get('version')) is int and raw['version'] == 1, 'version must be 1')
-    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author', 'github', 'url'})
+    site = obj(raw.get('site', {}), 'site', {'title', 'description', 'author', 'github', 'url', 'language'})
+    language = string(site.get('language'), 'site.language', 'en')
+    check(language in ('en', 'it', 'es', 'fr', 'de'), 'site.language: use en, it, es, fr or de')
     github = string(site.get('github'), 'site.github', '')
     if github:
         try:
@@ -87,7 +89,7 @@ def normalize(raw):
         'title': string(site.get('title'), 'site.title', 'My AI stack'),
         'description': string(site.get('description'), 'site.description', 'Tools change. Keep the story.'),
         'author': string(site.get('author'), 'site.author', 'Stack journal'),
-        'github': github, 'url': reference_url or github}, 'entries': []}
+        'github': github, 'url': reference_url or github, 'language': language}, 'entries': []}
     for kind in ['models', 'harnesses', 'categories']:
         catalog = raw.get(kind, {})
         check(isinstance(catalog, dict) and len(catalog) <= 500, f'{kind}: expected a mapping, max 500 items')

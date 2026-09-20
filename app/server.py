@@ -12,6 +12,7 @@ from app import __version__
 STATIC = Path(__file__).parent / 'static'
 CONFIG = Path(os.environ.get('STACKTRACE_CONFIG', 'config/timeline.yaml'))
 ASSETS = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
+          '/i18n.js': ('i18n.js', 'text/javascript'),
           '/style.css': ('style.css', 'text/css'), '/favicon.svg': ('favicon.svg', 'image/svg+xml')}
 ASSETS.update({f'/icons/{path.name}': (f'icons/{path.name}', 'image/svg+xml')
                for path in (STATIC / 'icons').glob('*.svg')})

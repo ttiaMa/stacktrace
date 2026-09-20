@@ -2,6 +2,7 @@
 # Edit this file; reload the page to see changes.
 version: 1
 site:
+  language: en # en, it, es, fr, de
   title: My evolving AI stack
   description: A personal record of the models, tools and experiments behind the work.
   author: Your name

@@ -36,6 +36,7 @@ function setup(entries, categories = {code:{name:'Code',icon:'C'},chat:{name:'Ch
       return visit(nodes.timeline);
     }},
     fetch:url=>{requests.push(url);return new Promise(()=>{});},setInterval(){throw new Error('Background polling is not allowed');}});
+  vm.runInContext(fs.readFileSync('app/static/i18n.js','utf8'),context);
   vm.runInContext(fs.readFileSync('app/static/app.js','utf8'),context);
   context.fixture={today:'2026-09-18', entries:entries.map(e=>({model:'m',tags:[],notes:'',...e})),
     categories,models:{m:{name:'Model',icon:'M',color:'#abcdef'}},harnesses:{}};
@@ -324,4 +325,37 @@ test('timeline layout is measured with the previous chart still attached',()=>{
   }});
   vm.runInContext("updateHistory({zoom:'years'})",app.context);
   assert.equal(app.nodes.timeline.children.length,1);
+});
+
+test('all five dictionaries cover every UI key and preserve interpolation fields',()=>{
+  const app=setup([]);
+  const messages=vm.runInContext('MESSAGES',app.context);
+  const keys=Object.keys(messages.en).sort();
+  assert.deepEqual(Object.keys(messages).sort(),['de','en','es','fr','it']);
+  const placeholders=text=>[...text.matchAll(/\{(\w+)\}/g)].map(match=>match[1]).sort();
+  for (const [language,entries] of Object.entries(messages)) {
+    assert.deepEqual(Object.keys(entries).sort(),keys,language);
+    for (const key of keys) {
+      assert.ok(entries[key].trim(),language+': '+key);
+      assert.deepEqual(placeholders(entries[key]),placeholders(messages.en[key]),language+': '+key);
+    }
+  }
+  for (const match of fs.readFileSync('app/static/index.html','utf8').matchAll(/data-i18n(?:-label|-placeholder|-title)?="([^"]+)"/g)) {
+    assert.ok(keys.includes(match[1]),'Missing static translation: '+match[1]);
+  }
+});
+
+test('localized views translate UI and dates while preserving authored stories',()=>{
+  const app=setup([{id:'a',title:'My project',category:'code',start:'2026-01-01',notes:'Original notes',url:'https://example.com',tags:['original']}]);
+  for (const [language,action] of [['en','Go to today'],['it','Vai a oggi'],['es','Ir a hoy'],['fr','Aller à aujourd’hui'],['de','Zu heute']]) {
+    vm.runInContext(`setLanguage('${language}');renderCategories();renderMain();renderJournal(filtered());renderOverview();choose(data.entries[0]);`,app.context);
+    assert.equal(vm.runInContext("t('goToday')",app.context),action);
+    assert.equal(app.nodes.journal.children[0].children.find(n=>n.className==='notes').textContent,'Original notes');
+    assert.equal(app.nodes.journal.children[0].children.find(n=>n.className==='eyebrow').textContent,'Code');
+    assert.equal(app.nodes.journal.children[0].children.find(n=>n.href).textContent,vm.runInContext("t('relatedProject')",app.context));
+    assert.match(vm.runInContext("t('results',{visible:2,total:7})",app.context),/2.*7/);
+  }
+  assert.match(vm.runInContext("human('2026-01-01')",app.context),/2026/);
+  vm.runInContext("setLanguage('unsupported')",app.context);
+  assert.equal(vm.runInContext('language',app.context),'en');
 });

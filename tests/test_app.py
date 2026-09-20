@@ -43,6 +43,16 @@ class ValidationTests(unittest.TestCase):
         for url in ['javascript:alert(1)', '//example.com', 'https://', 'https://user:secret@example.com', 'https://example.com:bad', 'https://example.com/a b']:
             self.base['site']['url'] = url
             with self.subTest(url=url), self.assertRaises(ConfigError): normalize(self.base)
+    def test_interface_language(self):
+        self.assertEqual(normalize(self.base)['site']['language'], 'en')
+        for language in ['en', 'it', 'es', 'fr', 'de']:
+            self.base['site'] = {'language':language, 'title':'My own title'}
+            result = normalize(self.base)['site']
+            self.assertEqual(result['language'], language)
+            self.assertEqual(result['title'], 'My own title')
+        for language in ['pt', 'IT', '', 12, ['en']]:
+            self.base['site'] = {'language':language}
+            with self.subTest(language=language), self.assertRaises(ConfigError): normalize(self.base)
     def test_multiple_models_share_one_period(self):
         entry = self.base['entries'][0]
         entry.pop('model')
@@ -111,6 +121,7 @@ class ServerTests(unittest.TestCase):
         return response
     def test_routes_readonly(self):
         self.assertEqual(self.request('/')['status'],'200 OK')
+        self.assertEqual(self.request('/i18n.js')['status'],'200 OK')
         self.assertEqual(self.request('/api/timeline','POST')['status'],'405 Method Not Allowed')
         for route in ['/config/timeline.yaml','/../requirements.txt','/.env']:
             self.assertEqual(self.request(route)['status'],'404 Not Found')

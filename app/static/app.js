@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const DAY = 86400000;
 const parseDate = value => Date.parse(value + 'T00:00:00Z');
 const iso = value => new Date(value).toISOString().slice(0, 10);
-const human = value => new Intl.DateTimeFormat('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(parseDate(value));
+const human = value => new Intl.DateTimeFormat(LOCALES[language], {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(parseDate(value));
 const params = new URLSearchParams(location.search);
 const state = {category: params.get('category') || '', query: params.get('q') || '',
   section: params.get('section') === 'stats' ? 'stats' : 'journal',
@@ -63,12 +63,12 @@ function badges(entry) {
   const wrapper = el('div','badges');
   for (const entity of entities(entry)) {
     const badge = color(el('span','badge'), entity.color);
-    badge.append(el('small','',entity.kind.toUpperCase()), entityIcon(entity), el('span','badge-label',entity.name+(entity.role?' · '+entity.role:'')));
+    badge.append(el('small','',t(entity.kind).toLocaleUpperCase(LOCALES[language])), entityIcon(entity), el('span','badge-label',entity.name+(entity.role?' · '+entity.role:'')));
     wrapper.append(badge);
   }
   return wrapper;
 }
-function rangeText(entry) { return `${human(entry.start)} - ${entry.end ? human(entry.end) : entry.start > data.today ? 'planned · open end' : 'present'}`; }
+function rangeText(entry) { return `${human(entry.start)} - ${entry.end ? human(entry.end) : entry.start > data.today ? t('planned') : t('present')}`; }
 function renderOverview() {
   const current = $('current'); current.replaceChildren();
   const seen = new Set();
@@ -79,19 +79,19 @@ function renderOverview() {
       seen.add(key);
       const item = el('div','current-item');
       const icon=color(el('span','entity-icon'),entity.color); icon.append(entityIcon(entity)); item.append(icon);
-      const label = el('div'); label.append(el('div','entity-name',entity.name),el('p','entity-kind',entity.kind)); item.append(label); current.append(item);
+      const label = el('div'); label.append(el('div','entity-name',entity.name),el('p','entity-kind',t(entity.kind))); item.append(label); current.append(item);
     }
   }
-  if (!seen.size) current.append(el('p','caption','No tools active today.'));
+  if (!seen.size) current.append(el('p','caption',t('emptyCurrent')));
   $('stats').replaceChildren();
   const count = field => new Set(data.entries.flatMap(entities).filter(e=>e.kind===field).map(e=>e.id)).size;
-  for (const [label, value] of [['Models used',count('model')],['Harnesses used',count('harness')],['Periods recorded',data.entries.length]]) {
+  for (const [label, value] of [[t('modelsUsed'),count('model')],[t('harnessesUsed'),count('harness')],[t('periodsRecorded'),data.entries.length]]) {
     const row = el('div','stat'); row.append(el('span','',label),el('strong','',String(value).padStart(2,'0'))); $('stats').append(row);
   }
 }
 function renderCategories() {
   $('categories').replaceChildren();
-  for (const [id, label] of [['','All activity'], ...Object.entries(data.categories).map(([key,c])=>[key,c.name])]) {
+  for (const [id, label] of [['',t('allActivity')], ...Object.entries(data.categories).map(([key,c])=>[key,c.name])]) {
     const button = el('button','',label); button.setAttribute('aria-pressed',String(state.category === id));
     button.dataset.category=id;
     button.addEventListener('click',()=>updateHistory({category:id})); $('categories').append(button);
@@ -107,7 +107,7 @@ function renderTimeline(entries) {
   const container = $('timeline'); const scrollLeft = container.scrollLeft || 0, scrollTop = container.scrollTop || 0;
   const previous = viewport;
   $('timeline-nav').hidden = !entries.length;
-  if (!entries.length) { viewport = undefined; container.replaceChildren(el('p','empty','No matching periods. Try another filter or add an entry to your YAML.')); return; }
+  if (!entries.length) { viewport = undefined; container.replaceChildren(el('p','empty',t('noMatchesTimeline'))); return; }
   const today = parseDate(data.today);
   const first = Math.min(...entries.map(e=>parseDate(e.start)),today);
   const last = Math.max(...entries.map(end),today+DAY);
@@ -119,23 +119,23 @@ function renderTimeline(entries) {
   const blocks = [];
   const chartWidth = Math.ceil(Math.max(740, container.clientWidth, state.zoom === 'fit' ? 0 : 150 + span / (365.25*DAY) * (state.zoom === 'detail' ? 2880 : 480)));
   chart.style.width = chartWidth + 'px';
-  const axisRow = el('div','axis-row'); axisRow.append(el('div','axis-title','ACTIVITY'));
+  const axisRow = el('div','axis-row'); axisRow.append(el('div','axis-title',t('activity')));
   const axis = el('div','axis'); const ticks=[];
   const tickCount = Math.max(2, Math.floor((chartWidth-150)/110));
   for (let index=0;index<tickCount;index++) {
     const value = start+span*index/tickCount;
     ticks.push(position(value));
-    const tick = el('span','tick-label',new Intl.DateTimeFormat('en-GB',{month:'short',year:'numeric', ...(span/tickCount<28*DAY?{day:'numeric'}:{}),timeZone:'UTC'}).format(new Date(value)));
+    const tick = el('span','tick-label',new Intl.DateTimeFormat(LOCALES[language],{month:'short',year:'numeric', ...(span/tickCount<28*DAY?{day:'numeric'}:{}),timeZone:'UTC'}).format(new Date(value)));
     tick.style.left=position(value)+'%'; axis.append(tick);
   }
   axisRow.append(axis); chart.append(axisRow);
-  const groups = [...Object.entries(data.categories), ['', {name:'Uncategorized'}]];
+  const groups = [...Object.entries(data.categories), ['', {name:t('uncategorized')}]];
   for (const [category, info] of groups) {
     const periods = entries.filter(entry => (entry.category || '') === category);
     if (!periods.length) continue;
     const row = el('div','timeline-row');
     const label = el('div','row-label');
-    label.append(el('h3','activity-name',info.name),el('div','row-category',`${periods.length} ${periods.length === 1 ? 'period' : 'periods'}`));
+    label.append(el('h3','activity-name',info.name),el('div','row-category',t(periods.length===1?'periodOne':'periodOther',{count:periods.length})));
     const track = el('div','track');
     for (const tick of ticks) { const grid = el('span','gridline'); grid.style.left=tick+'%'; track.append(grid); }
     if (today>=start && today<finish) { const now = el('span','gridline today-line'); now.style.left=position(today)+'%'; track.append(now); }
@@ -158,7 +158,7 @@ function renderTimeline(entries) {
       block.style.left = left+'%'; block.style.width = width+'%';
       blocks.push({node:block,left:left/100*(chartWidth-150),right:(left+width)/100*(chartWidth-150)});
       block.setAttribute('aria-pressed', String(entry.id === state.selected));
-      const description = `${entry.title}. ${entities(entry).map(entity=>entity.kind+' '+entityText(entity)).join('; ')}. ${rangeText(entry)}`;
+      const description = `${entry.title}. ${entities(entry).map(entity=>t(entity.kind)+' '+entityText(entity)).join('; ')}. ${rangeText(entry)}`;
       block.title = rangeText(entry); block.setAttribute('aria-label', description);
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
@@ -227,10 +227,10 @@ function syncNavigation() {
 }
 function renderJournal(entries) {
   const articles=[];
-  if (!entries.length) articles.push(el('p','empty','No matching periods.'));
+  if (!entries.length) articles.push(el('p','empty',t('noMatches')));
   for (const entry of [...entries].reverse()) {
     const item = el('article','journal-item');
-    item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('div','period-date',rangeText(entry)),el('h3','',entry.title),badges(entry));
+    item.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:t('usePeriod')),el('div','period-date',rangeText(entry)),el('h3','',entry.title),badges(entry));
     appendStory(item,entry);
     articles.push(item);
   }
@@ -243,7 +243,7 @@ function renderMain() {
   $('stats-section').setAttribute('aria-pressed',String(statsPage));
   if (statsPage) return;
   const entries = filtered();
-  $('results-count').textContent = `${entries.length} of ${data.entries.length} periods · complete history`;
+  $('results-count').textContent = t('results',{visible:entries.length,total:data.entries.length});
   // Render the destination before hiding the previous view to avoid an empty layout.
   if (state.view==='timeline') { $('timeline').hidden=false; renderTimeline(entries); }
   else renderJournal(entries);
@@ -288,18 +288,18 @@ function renderDetails() {
     if (state.selected) { state.selected=''; updateURL(); }
     $('details').replaceChildren();
     const empty=el('div','empty-detail'); empty.append(el('span','','↖'));
-    const copy=el('div'); copy.append(el('h2','','Every switch has a story.'),el('p','caption','Select a period to see its models, harness, notes and links.')); empty.append(copy); $('details').append(empty); return;
+    const copy=el('div'); copy.append(el('h2','',t('emptyTitle')),el('p','caption',t('emptyDetails'))); empty.append(copy); $('details').append(empty); return;
   }
   const target=$('details'); target.replaceChildren();
   const top=el('div','detail-top'), heading=el('div');
-  heading.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:'Period of use'),el('h3','',entry.title),el('p','period-date',rangeText(entry)));
-  const close=el('button','','×'); close.setAttribute('aria-label','Close period details'); close.addEventListener('click',()=>choose(null));
+  heading.append(el('p','eyebrow',entry.category?data.categories[entry.category].name:t('usePeriod')),el('h3','',entry.title),el('p','period-date',rangeText(entry)));
+  const close=el('button','','×'); close.setAttribute('aria-label',t('closeDetails')); close.addEventListener('click',()=>choose(null));
   top.append(heading,close); target.append(top,badges(entry));
   appendStory(target,entry);
 }
 function appendStory(target,entry) {
   if (entry.notes) target.append(el('p','notes',entry.notes));
-  if (entry.url) { const link=el('a','','Related project ↗'); link.href=entry.url; link.target='_blank'; link.rel='noopener noreferrer'; target.append(link); }
+  if (entry.url) { const link=el('a','',t('relatedProject')); link.href=entry.url; link.target='_blank'; link.rel='noopener noreferrer'; target.append(link); }
   const tags=el('div'); for (const tag of entry.tags) tags.append(el('span','tag','#'+tag)); target.append(tags);
 }
 function renderAuthor() {
@@ -309,7 +309,7 @@ function renderAuthor() {
     link.href=data.site.url; link.target='_blank'; link.rel='noopener noreferrer';
     author.append(link);
   } else author.append(document.createTextNode(data.site.author));
-  author.append(document.createTextNode(' / AI JOURNAL'));
+  author.append(document.createTextNode(' / '+t('authorJournal')));
 }
 let infoMode='';
 function setInfo(open,mode='') {
@@ -343,6 +343,9 @@ function enhanceSelect(id) {
     trigger.setAttribute('aria-activedescendant',items[highlighted].id);
   }
   function sync() {
+    trigger.setAttribute('aria-label',select.getAttribute('aria-label'));
+    list.setAttribute('aria-label',select.getAttribute('aria-label'));
+    items.forEach((item,index)=>{item.textContent=options[index].textContent;});
     trigger.textContent=options.find(option=>option.value===select.value).textContent;
     items.forEach((item,index)=>item.setAttribute('aria-selected',String(options[index].value===select.value)));
   }
@@ -378,26 +381,28 @@ function enhanceSelect(id) {
   document.addEventListener('click',event=>{if(!wrapper.contains(event.target))close();});
   select.addEventListener('change',sync);
   sync(); select.hidden=true; wrapper.append(trigger,list);
+  return sync;
 }
 async function loadTimeline() {
   try {
     const response=await fetch('/api/timeline',{cache:'no-store'});
-    if (!response.ok) throw new Error('Configuration unavailable. Check the server logs.');
+    if (!response.ok) throw new Error(t('configUnavailable'));
     const next=await response.json();
-    notice(next.stale?'The YAML has an error. Showing the last valid timeline; check the server logs.':'');
     data=next;
+    setLanguage(data.site.language); translatePage(); refreshZoomLabels();
+    notice(next.stale?t('stale'):'');
     if (state.category && !data.categories[state.category]) {state.category='';updateURL();}
     document.title=data.site.title+' · Stacktrace'; $('title').textContent=data.site.title;
     $('description').textContent=data.site.description;
     renderAuthor();
-    $('app-version').textContent=data.app_version || 'development';
+    $('app-version').textContent=data.app_version || t('development');
     $('today-label').textContent=human(data.today).toUpperCase();
     renderOverview(); renderCategories(); renderMain(); renderDetails();
   } catch (error) { notice(error.message); }
 }
 $('search').value=state.query;
 $('zoom').value=state.zoom;
-enhanceSelect('zoom');
+const refreshZoomLabels=enhanceSelect('zoom');
 $('info-toggle').addEventListener('click',()=>setInfo(infoMode!=='click','click'));
 $('info-wrap').addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setInfo(true,'hover');});
 $('info-wrap').addEventListener('pointerleave',()=>setInfo(false));
@@ -419,8 +424,8 @@ $('search').addEventListener('input',event=>updateHistory({query:event.target.va
 for (const view of ['timeline','journal']) $(view+'-view').addEventListener('click',()=>updateHistory({view}));
 for (const section of ['journal','stats']) $(section+'-section').addEventListener('click',()=>switchSection(section));
 $('share').addEventListener('click',async()=>{
-  try { await navigator.clipboard.writeText(location.href); $('share').textContent='✓ Link copied'; setTimeout(()=>{$('share').textContent='Share';},2000); }
-  catch { window.prompt('Copy this view’s link:',location.href); }
+  try { await navigator.clipboard.writeText(location.href); $('share').textContent=t('copied'); setTimeout(()=>{$('share').textContent=t('share');},2000); }
+  catch { window.prompt(t('copyPrompt'),location.href); }
 });
 // Load once per page visit. New YAML data and today's date appear on reload.
 updateURL(); // Drop legacy entry links: selection belongs only to this page visit.

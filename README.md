@@ -38,6 +38,7 @@ Replace `config/timeline.yaml` with:
 ```yaml
 version: 1
 site:
+  language: en # en, it, es, fr, de
   title: My AI stack
   description: What I use, what I tried, and why I switched.
   author: Your name
@@ -86,6 +87,8 @@ For two models in the same period, replace the entry's `model` field with `model
 ```
 
 The roles are optional, searchable labels; both models share the entry's dates, title, notes and project link. Use separate periods when their dates differ. Do not set both `model` and `models` on an entry.
+
+Set `site.language` to `en`, `it`, `es`, `fr` or `de` (default: `en`). Reload the page to apply it. Interface labels, dates, tooltips, statistics and accessibility labels follow this setting; your titles, notes, categories, tags, model names and roles remain exactly as authored.
 
 ## Features
 

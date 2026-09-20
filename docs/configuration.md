@@ -11,7 +11,7 @@ Legacy version 1 files with root `models` or `harnesses` catalogs remain support
 | Key | Type | Meaning |
 | --- | --- | --- |
 | `version` | integer | Required, exactly `1`. |
-| `site` | mapping | Optional `title`, `description`, `author`, `url` (legacy `github` supported); defaults supplied. |
+| `site` | mapping | Optional `title`, `description`, `author`, `url`, `language` (legacy `github` supported); defaults supplied. |
 | `models` | mapping | Model IDs → catalog objects. |
 | `harnesses` | mapping | Harness IDs → catalog objects. |
 | `categories` | mapping | User-defined activity IDs → catalog objects; each activity is a timeline row, in declaration order. |
@@ -20,6 +20,15 @@ Legacy version 1 files with root `models` or `harnesses` catalogs remain support
 Catalogs and entries default to empty. Only documented keys are accepted. IDs use 1–80 ASCII letters, digits, `_` or `-`. Catalog IDs are independent; entry IDs must be unique. Explicit text values must be nonblank and at most 4,000 characters; omit optional text instead of writing empty strings. YAML anchors/aliases and duplicate keys are rejected.
 
 Set `site.url` to an HTTP or HTTPS reference URL to make the author name above the title a link. It can point to a profile, personal website or project. Without a URL, the name remains plain text. The legacy `site.github` field still works as a fallback when `site.url` is omitted; it retains its HTTPS GitHub validation. There is no separate GitHub button.
+
+## Interface language
+
+Set `site.language` to `en`, `it`, `es`, `fr` or `de`. English is the default when omitted. Other values are rejected. The setting controls interface text and date formatting, including the timeline, Journal, Stats, menus and accessibility labels. It does not translate your authored content or change the UTC calendar dates. Reload after editing the YAML. There is no browser language override.
+
+```yaml
+site:
+  language: it
+```
 
 ## Catalog objects
 
