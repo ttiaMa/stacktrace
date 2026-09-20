@@ -1,7 +1,7 @@
 # Pinned stable release; no local build is required.
 services:
   stacktrace:
-    image: ghcr.io/ttiama/stacktrace:0.1
+    image: ghcr.io/ttiama/stacktrace:0.2
     restart: unless-stopped
     ports:
       - "8080:8080"

@@ -20,7 +20,7 @@ Download `compose.release.yaml` and `timeline.yaml` from the [latest release](ht
 docker compose -f compose.release.yaml up -d
 ```
 
-Open **http://localhost:8080**. The prebuilt image is `ghcr.io/ttiama/stacktrace:0.1`, available for Linux AMD64 and ARM64 without a registry login. No local build or repository clone is needed.
+Open **http://localhost:8080**. The prebuilt image is `ghcr.io/ttiama/stacktrace:0.2`, available for Linux AMD64 and ARM64 without a registry login. No local build or repository clone is needed.
 
 Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. Categories, search, scale and display modes use the snapshot already loaded in the browser; they do not reload the page or request new timeline data. The timeline is mounted read-only. If your editor replaces the file atomically, recreate the container to refresh its file mount (`docker compose -f compose.release.yaml up -d --force-recreate`).
 
@@ -37,7 +37,7 @@ Change the left side of `8080:8080` in `compose.release.yaml` for a different ho
 
 ### Stable updates
 
-Published/stable installations use `compose.release.yaml`, explicitly pinned to the current stable image, `ghcr.io/ttiama/stacktrace:0.1`. When a new release is published, maintainers manually update its image tag. To upgrade, download the updated Compose file, then pull and recreate the container:
+Published/stable installations use `compose.release.yaml`, explicitly pinned to the current stable image, `ghcr.io/ttiama/stacktrace:0.2`. When a new release is published, maintainers manually update its image tag. To upgrade, download the updated Compose file, then pull and recreate the container:
 
 ```sh
 docker compose -f compose.release.yaml pull
