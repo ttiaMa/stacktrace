@@ -2,6 +2,8 @@
 // Interface strings only: authored YAML content is never translated.
 const MESSAGES = {
   "en": {
+    "currentDay": "For {count} day",
+    "currentDays": "For {count} days",
     "daysTracked": "Days tracked",
     "stackInsights": "Stack insights",
     "insightsIntro": "A few highlights from your journal",
@@ -84,6 +86,8 @@ const MESSAGES = {
     "copyPrompt": "Copy this view’s link:"
   },
   "it": {
+    "currentDay": "Da {count} giorno",
+    "currentDays": "Da {count} giorni",
     "daysTracked": "Giorni registrati",
     "stackInsights": "Stack insights",
     "insightsIntro": "Alcuni momenti salienti del tuo diario",
@@ -166,6 +170,8 @@ const MESSAGES = {
     "copyPrompt": "Copia il link di questa vista:"
   },
   "es": {
+    "currentDay": "Desde hace {count} día",
+    "currentDays": "Desde hace {count} días",
     "daysTracked": "Días registrados",
     "stackInsights": "Stack insights",
     "insightsIntro": "Algunos momentos destacados de tu diario",
@@ -248,6 +254,8 @@ const MESSAGES = {
     "copyPrompt": "Copia el enlace de esta vista:"
   },
   "fr": {
+    "currentDay": "Depuis {count} jour",
+    "currentDays": "Depuis {count} jours",
     "daysTracked": "Jours enregistrés",
     "stackInsights": "Stack insights",
     "insightsIntro": "Quelques moments forts de votre journal",
@@ -330,6 +338,8 @@ const MESSAGES = {
     "copyPrompt": "Copiez le lien de cette vue :"
   },
   "de": {
+    "currentDay": "Seit {count} Tag",
+    "currentDays": "Seit {count} Tagen",
     "daysTracked": "Erfasste Tage",
     "stackInsights": "Stack insights",
     "insightsIntro": "Einige Highlights aus deinem Journal",

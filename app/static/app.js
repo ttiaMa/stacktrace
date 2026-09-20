@@ -78,6 +78,14 @@ function trackedDays(intervals) {
   }
   return total/DAY;
 }
+// Walk backward from today through overlapping or directly adjacent intervals.
+function currentStreakDays(intervals, today) {
+  let start=today+DAY;
+  for (const [begin, finish] of [...intervals].sort((a,b)=>b[0]-a[0])) {
+    if (finish>=start) start=Math.min(start,begin);
+  }
+  return (today+DAY-start)/DAY;
+}
 function overviewStats() {
   const today=parseDate(data.today), intervals=[], tools={model:new Map(),harness:new Map()};
   let duration=0, periods=0, first=null, last=null;
@@ -102,7 +110,10 @@ function overviewStats() {
       tool.current ||= active(entry);
     }
   }
-  for (const group of Object.values(tools)) for (const tool of group.values()) tool.days=trackedDays(tool.intervals);
+  for (const group of Object.values(tools)) for (const tool of group.values()) {
+    tool.days=trackedDays(tool.intervals);
+    tool.currentDays=tool.current?currentStreakDays(tool.intervals,today):0;
+  }
   return {tools,days:trackedDays(intervals),average:periods?duration/periods:null,first,last};
 }
 function renderOverview() {
@@ -117,7 +128,9 @@ function renderOverview() {
     for (const entity of activeTools) {
       const item=el('div','current-item');
       const icon=color(el('span','entity-icon'),entity.color); icon.append(entityIcon(entity));
-      item.append(icon,el('div','entity-name',entity.name)); list.append(item);
+      const label=el('div','current-label');
+      label.append(el('div','entity-name',entity.name),el('p','current-duration',t(entity.currentDays===1?'currentDay':'currentDays',{count:number(entity.currentDays)})));
+      item.append(icon,label); list.append(item);
     }
     if (!activeTools.length) list.append(el('p','caption',t('emptyCurrent')));
     group.append(list); current.append(group);
@@ -216,7 +229,7 @@ function renderTimeline(entries) {
       blocks.push({node:block,left:left/100*(chartWidth-150),right:(left+width)/100*(chartWidth-150)});
       block.setAttribute('aria-pressed', String(entry.id === state.selected));
       const description = `${entry.title}. ${entities(entry).map(entity=>t(entity.kind)+' '+entityText(entity)).join('; ')}. ${rangeText(entry)}`;
-      block.title = rangeText(entry); block.setAttribute('aria-label', description);
+      block.title = entry.title + "\n" + rangeText(entry); block.setAttribute('aria-label', description);
       block.append(el('span','period-title',entry.title));
       for (const entity of entities(entry)) {
         const strip = color(el('span','period-entity '+entity.kind),entity.color);

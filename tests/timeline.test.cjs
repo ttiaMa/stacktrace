@@ -56,6 +56,7 @@ test('activity rows pack overlaps and reuse lanes after inclusive end dates',()=
   assert.equal(a.style.top,c.style.top);
   assert.notEqual(a.style.top,b.style.top);
   assert.match(a.attrs['aria-label'],/First.*Model.*2024/);
+  assert.match(a.title,/^First\n.*2024/);
 });
 test('multi-year history scrolls, fit changes scale, filters and selection survive',()=>{
   const app=setup([{id:'old',title:'Old',category:'code',start:'2020-01-01',end:'2022-01-01'},
@@ -403,4 +404,37 @@ test('stats preserve earliest tied tools and inclusive leap-day durations',()=>{
   assert.equal(app.nodes.insights.children[3].children[1].textContent,'Model · Another');
   assert.equal(app.nodes.insights.children[4].children[1].textContent,'Model · Another');
   assert.equal(app.nodes.insights.children[6].children[1].textContent,'Harness');
+});
+
+
+test('current rotation counts continuous days across overlap and adjacency, resetting after gaps',()=>{
+  const app=setup([
+    {id:'old',start:'2026-08-01',end:'2026-08-31',harness:'h'},
+    {id:'now',start:'2026-09-15',harness:'h'},
+    {id:'previous',start:'2026-09-10',end:'2026-09-14',harness:'h'},
+    {id:'overlap',start:'2026-09-12',end:'2026-09-16',harness:'h'},
+    {id:'gap',start:'2026-09-01',end:'2026-09-08',harness:'h'},
+    {id:'future',start:'2027-01-01',harness:'h'}]);
+  vm.runInContext("data.harnesses.h={name:'Harness'}; renderOverview()",app.context);
+  const stats=vm.runInContext('overviewStats()',app.context);
+  assert.equal(stats.tools.model.get('m').currentDays,9);
+  assert.equal(stats.tools.harness.get('h').currentDays,9);
+  assert.equal(app.nodes.current.children[0].children[1].children[0].children[1].children[1].textContent,'For 9 days');
+  vm.runInContext("setLanguage('it'); renderOverview()",app.context);
+  assert.equal(app.nodes.current.children[1].children[1].children[0].children[1].children[1].textContent,'Da 9 giorni');
+});
+
+test('current duration handles nested intervals, today-only use and inactive tools',()=>{
+  const app=setup([
+    {id:'long',start:'2026-09-01'},
+    {id:'nested',start:'2026-09-10',end:'2026-09-11'},
+    {id:'today',start:'2026-09-18',end:'2026-09-18'},
+    {id:'harness',start:'2026-09-18',model:null,harness:'h'},
+    {id:'ended',start:'2026-09-01',end:'2026-09-17',model:'ended'}]);
+  vm.runInContext("data.harnesses.h={name:'Harness'}; data.models.ended={name:'Ended'}; renderOverview()",app.context);
+  const stats=vm.runInContext('overviewStats()',app.context);
+  assert.equal(stats.tools.model.get('m').currentDays,18);
+  assert.equal(stats.tools.model.get('ended').currentDays,0);
+  assert.equal(stats.tools.harness.get('h').currentDays,1);
+  assert.equal(app.nodes.current.children[1].children[1].children[0].children[1].children[1].textContent,'For 1 day');
 });
