@@ -20,7 +20,7 @@ Download `compose.release.yaml` and `timeline.yaml` from the [latest release](ht
 docker compose -f compose.release.yaml up -d
 ```
 
-Open **http://localhost:8080**. The prebuilt image is `ghcr.io/ttiama/stacktrace:0.2`, available for Linux AMD64 and ARM64 without a registry login. No local build or repository clone is needed.
+Route your reverse proxy to container port **8080**; no host port is published by default. The prebuilt image is `ghcr.io/ttiama/stacktrace:0.2.1`, available for Linux AMD64 and ARM64 without a registry login. No local build or repository clone is needed.
 
 Edit `config/timeline.yaml`; reload the page to load your changes, without rebuilding or restarting the server. Categories, search, scale and display modes use the snapshot already loaded in the browser; they do not reload the page or request new timeline data. The timeline is mounted read-only. If your editor replaces the file atomically, recreate the container to refresh its file mount (`docker compose -f compose.release.yaml up -d --force-recreate`).
 
@@ -33,11 +33,13 @@ docker compose -f compose.release.yaml logs --tail=50 stacktrace
 docker compose -f compose.release.yaml down
 ```
 
-Change the left side of `8080:8080` in `compose.release.yaml` for a different host port. The default binds all host interfaces; use `127.0.0.1:8080:8080` when your reverse proxy runs directly on the host.
+For direct local access at **http://localhost:8080**, add `ports: ["127.0.0.1:8080:8080"]` to the `stacktrace` service in your local copy of `compose.release.yaml`.
+
+In Coolify, when deploying `compose.release.yaml`, enable **“Preserve Repository During Deployment”** so `config/timeline.yaml` remains available for the `./config/timeline.yaml` bind mount. Route your hostname to container port **8080**.
 
 ### Stable updates
 
-Published/stable installations use `compose.release.yaml`, explicitly pinned to the current stable image, `ghcr.io/ttiama/stacktrace:0.2`. When a new release is published, maintainers manually update its image tag. To upgrade, download the updated Compose file, then pull and recreate the container:
+Published/stable installations use `compose.release.yaml`, explicitly pinned to the current stable image, `ghcr.io/ttiama/stacktrace:0.2.1`. When a new release is published, maintainers manually update its image tag. To upgrade, download the updated Compose file, then pull and recreate the container:
 
 ```sh
 docker compose -f compose.release.yaml pull
@@ -48,7 +50,7 @@ Your bind-mounted YAML stays separate from the image.
 
 ### Build from source or deploy with Coolify
 
-Development and Coolify deployments build from source using `compose.yaml` (`build: .`, `image: stacktrace:local`). Clone/import this repository and use `docker compose up -d --build`. This Compose file exposes container port **8080** to the proxy without publishing a host port; in Coolify, route your hostname to that port. For direct access without a proxy, add a `ports: ["8080:8080"]` mapping to that Compose file. Keep the live YAML outside the application checkout when redeploying.
+Development and source-based Coolify deployments build from source using `compose.yaml` (`build: .`, `image: stacktrace:local`). Clone/import this repository and use `docker compose up -d --build`. This Compose file exposes container port **8080** to the proxy without publishing a host port; in Coolify, route your hostname to that port. For direct access without a proxy, add a `ports: ["8080:8080"]` mapping to that Compose file. Keep the live YAML outside the application checkout when redeploying.
 
 ## Your first timeline
 
