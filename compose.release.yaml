@@ -1,7 +1,7 @@
-# Pin a release with STACKTRACE_VERSION in .env; no local build is required.
+# Pinned stable release; no local build is required.
 services:
   stacktrace:
-    image: ghcr.io/ttiama/stacktrace:${STACKTRACE_VERSION:-0.1}
+    image: ghcr.io/ttiama/stacktrace:0.1
     restart: unless-stopped
     ports:
       - "8080:8080"

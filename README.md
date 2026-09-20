@@ -35,26 +35,20 @@ docker compose -f compose.release.yaml down
 
 Change the left side of `8080:8080` in `compose.release.yaml` for a different host port. The default binds all host interfaces; use `127.0.0.1:8080:8080` when your reverse proxy runs directly on the host.
 
-### Choose a version
+### Stable updates
 
-The release Compose file defaults to `0.1`. To select another published release, set its tag in a `.env` file beside it:
-
-```dotenv
-STACKTRACE_VERSION=0.1
-```
-
-Then pull and recreate the container:
+Published/stable installations use `compose.release.yaml`, explicitly pinned to the current stable image, `ghcr.io/ttiama/stacktrace:0.1`. When a new release is published, maintainers manually update its image tag. To upgrade, download the updated Compose file, then pull and recreate the container:
 
 ```sh
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
-Your bind-mounted YAML stays separate from the image. Pin a numbered tag for predictable upgrades and rollbacks; `latest` follows new releases. You can also pull a specific version directly with `docker pull ghcr.io/ttiama/stacktrace:0.1`.
+Your bind-mounted YAML stays separate from the image.
 
 ### Build from source or deploy with Coolify
 
-Clone/import this repository and use `docker compose up -d --build`. The source `compose.yaml` exposes container port **8080** to the proxy without publishing a host port; in Coolify, route your hostname to that port. For direct access without a proxy, add a `ports: ["8080:8080"]` mapping to that Compose file. Keep the live YAML outside the application checkout when redeploying.
+Development and Coolify deployments build from source using `compose.yaml` (`build: .`, `image: stacktrace:local`). Clone/import this repository and use `docker compose up -d --build`. This Compose file exposes container port **8080** to the proxy without publishing a host port; in Coolify, route your hostname to that port. For direct access without a proxy, add a `ports: ["8080:8080"]` mapping to that Compose file. Keep the live YAML outside the application checkout when redeploying.
 
 ## Your first timeline
 
@@ -162,7 +156,7 @@ node --check app/static/i18n.js
 node --test tests/timeline.test.cjs
 ```
 
-CI validates configuration, runs tests, builds Docker and smoke-tests routes. Pushing a version tag such as `v0.1` also publishes versioned GHCR images after these checks; the tag must match `app.__version__`. See [verification notes](docs/verification.md) for local checks and remaining verification limits.
+CI validates configuration, runs tests, builds Docker and smoke-tests routes. Normal commits and pushes to development branches do not publish a release. Releases are published only when a version tag such as `v0.2.0` is pushed and these checks pass; first set `app.__version__` to the matching release version (`0.2.0`, without `-dev`). See [verification notes](docs/verification.md) for local checks and remaining verification limits.
 
 ## Repository layout
 
