@@ -359,3 +359,48 @@ test('localized views translate UI and dates while preserving authored stories',
   vm.runInContext("setLanguage('unsupported')",app.context);
   assert.equal(vm.runInContext('language',app.context),'en');
 });
+
+
+test('stats merge overlapping days, cap ongoing periods and ignore future durations',()=>{
+  const app=setup([
+    {id:'a',start:'2026-09-01',end:'2026-09-10',harness:'h'},
+    {id:'b',start:'2026-09-05',end:'2026-09-12',models:[{model:'m'},{model:'m'}]},
+    {id:'c',start:'2026-09-15',end:'2026-10-01',harness:'h'},
+    {id:'d',start:'2027-01-01',model:'future'}]);
+  vm.runInContext("data.models.future={name:'Future'}; data.harnesses.h={name:'Harness'}; renderOverview()",app.context);
+  const stats=vm.runInContext('overviewStats()',app.context);
+  assert.equal(stats.days,16); // Sep 1–12 and Sep 15–18; no gap or overlap inflation.
+  assert.equal(stats.average,22/3); // 10 + 8 + 4 elapsed days.
+  assert.equal(stats.tools.model.get('m').days,16);
+  assert.equal(stats.tools.harness.get('h').days,14);
+  assert.equal(stats.tools.model.get('future').days,0);
+  assert.equal(stats.last,Date.parse('2026-09-15T00:00:00Z'));
+  assert.equal(app.nodes.stats.children[0].children[1].textContent,'02');
+  assert.equal(app.nodes.stats.children[3].children[1].textContent,'16');
+  assert.equal(app.nodes.current.children.length,2);
+  assert.equal(app.nodes.current.children[0].children[1].children.length,1);
+  assert.equal(app.nodes.current.children[1].children[1].children.length,1);
+});
+
+test('stats handle empty and future-only history without fabricated dates or averages',()=>{
+  for (const entries of [[],[{id:'future',start:'2027-01-01'}]]) {
+    const app=setup(entries);
+    vm.runInContext('renderOverview()',app.context);
+    const stats=vm.runInContext('overviewStats()',app.context);
+    assert.equal(stats.days,0); assert.equal(stats.average,null);
+    assert.equal(stats.first,null); assert.equal(stats.last,null);
+    for (const insight of app.nodes.insights.children) assert.equal(insight.children[1].textContent,'—');
+  }
+});
+
+test('stats preserve earliest tied tools and inclusive leap-day durations',()=>{
+  const app=setup([{id:'b',start:'2024-02-28',end:'2024-03-01',model:null,harness:'h'},
+    {id:'a',start:'2024-02-28',end:'2024-03-01',models:[{model:'m'},{model:'n'}]}]);
+  vm.runInContext("data.models.n={name:'Another'}; data.harnesses.h={name:'Harness'}; renderOverview()",app.context);
+  const stats=vm.runInContext('overviewStats()',app.context);
+  assert.equal(stats.days,3); assert.equal(stats.average,3);
+  assert.equal(stats.last,Date.parse('2024-03-02T00:00:00Z'));
+  assert.equal(app.nodes.insights.children[3].children[1].textContent,'Model · Another');
+  assert.equal(app.nodes.insights.children[4].children[1].textContent,'Model · Another');
+  assert.equal(app.nodes.insights.children[6].children[1].textContent,'Harness');
+});

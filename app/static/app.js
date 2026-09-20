@@ -69,24 +69,81 @@ function badges(entry) {
   return wrapper;
 }
 function rangeText(entry) { return `${human(entry.start)} - ${entry.end ? human(entry.end) : entry.start > data.today ? t('planned') : t('present')}`; }
-function renderOverview() {
-  const current = $('current'); current.replaceChildren();
-  const seen = new Set();
-  for (const entry of data.entries.filter(active)) {
+// Inclusive calendar intervals; merge overlaps so parallel periods count once.
+function trackedDays(intervals) {
+  let total=0, finish=-Infinity;
+  for (const [start, end] of [...intervals].sort((a,b)=>a[0]-b[0])) {
+    total += Math.max(0, end-Math.max(start,finish));
+    finish = Math.max(finish,end);
+  }
+  return total/DAY;
+}
+function overviewStats() {
+  const today=parseDate(data.today), intervals=[], tools={model:new Map(),harness:new Map()};
+  let duration=0, periods=0, first=null, last=null;
+  for (const entry of data.entries) {
+    const start=parseDate(entry.start), finish=Math.min(parseDate(entry.end || data.today),today)+DAY;
+    const started=start<=today;
+    if (started) {
+      intervals.push([start,finish]); duration+=(finish-start)/DAY; periods++;
+      first=first===null?start:Math.min(first,start);
+      last=last===null?start:Math.max(last,start);
+      // A closed period leaves the rotation on the day after its inclusive end.
+      if (entry.end && finish<=today) last=Math.max(last,finish);
+    }
     for (const entity of entities(entry)) {
-      const key = entity.kind + ':' + entity.id;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const item = el('div','current-item');
-      const icon=color(el('span','entity-icon'),entity.color); icon.append(entityIcon(entity)); item.append(icon);
-      const label = el('div'); label.append(el('div','entity-name',entity.name),el('p','entity-kind',t(entity.kind))); item.append(label); current.append(item);
+      const group=tools[entity.kind];
+      if (!group.has(entity.id)) group.set(entity.id,{...entity,intervals:[],first:null,current:false});
+      const tool=group.get(entity.id);
+      if (started) {
+        tool.intervals.push([start,finish]);
+        tool.first=tool.first===null?start:Math.min(tool.first,start);
+      }
+      tool.current ||= active(entry);
     }
   }
-  if (!seen.size) current.append(el('p','caption',t('emptyCurrent')));
+  for (const group of Object.values(tools)) for (const tool of group.values()) tool.days=trackedDays(tool.intervals);
+  return {tools,days:trackedDays(intervals),average:periods?duration/periods:null,first,last};
+}
+function renderOverview() {
+  const summary=overviewStats();
+  const number=value=>new Intl.NumberFormat(LOCALES[language],{maximumFractionDigits:1}).format(value);
+  const days=value=>t('dayCount',{count:number(value)});
+  const current=$('current'); current.replaceChildren();
+  for (const kind of ['model','harness']) {
+    const group=el('section','rotation-group'); group.append(el('h3','',t(kind==='model'?'models':'harnesses')));
+    const list=el('div','rotation-list');
+    const activeTools=[...summary.tools[kind].values()].filter(tool=>tool.current);
+    for (const entity of activeTools) {
+      const item=el('div','current-item');
+      const icon=color(el('span','entity-icon'),entity.color); icon.append(entityIcon(entity));
+      item.append(icon,el('div','entity-name',entity.name)); list.append(item);
+    }
+    if (!activeTools.length) list.append(el('p','caption',t('emptyCurrent')));
+    group.append(list); current.append(group);
+  }
   $('stats').replaceChildren();
-  const count = field => new Set(data.entries.flatMap(entities).filter(e=>e.kind===field).map(e=>e.id)).size;
-  for (const [label, value] of [[t('modelsUsed'),count('model')],[t('harnessesUsed'),count('harness')],[t('periodsRecorded'),data.entries.length]]) {
-    const row = el('div','stat'); row.append(el('span','',label),el('strong','',String(value).padStart(2,'0'))); $('stats').append(row);
+  for (const [label,value,symbol] of [['modelsUsed',summary.tools.model.size,'◇'],['harnessesUsed',summary.tools.harness.size,'⚙'],['periodsRecorded',data.entries.length,'▤'],['daysTracked',summary.days,'▦']]) {
+    const row=el('div','stat');
+    row.append(el('span','',t(label)),el('strong','',String(value).padStart(2,'0')));
+    const icon=el('span','stat-icon',symbol); icon.setAttribute('aria-hidden','true'); row.append(icon); $('stats').append(row);
+  }
+  const insights=$('insights'); insights.replaceChildren();
+  const add=(label,value,detail)=>{
+    const item=el('div','insight'); item.append(el('span','caption',t(label)),el('strong','',value ?? '—'));
+    if (detail) item.append(el('p','caption',detail)); insights.append(item);
+  };
+  add('firstRecorded',summary.first===null?null:human(iso(summary.first)));
+  add('lastChange',summary.last===null?null:human(iso(summary.last)),t('lastChangeHelp'));
+  add('averagePeriod',summary.average===null?null:days(summary.average),t('averagePeriodHelp'));
+  for (const kind of ['model','harness']) {
+    const used=[...summary.tools[kind].values()].filter(tool=>tool.first!==null);
+    const maximum=Math.max(0,...used.map(tool=>tool.days));
+    const longest=used.filter(tool=>tool.days===maximum);
+    add(kind==='model'?'stableModel':'longestHarness',longest.length?longest.map(tool=>tool.name).join(' · '):null,longest.length?days(maximum):null);
+    const earliest=Math.min(...used.map(tool=>tool.first));
+    const first=used.filter(tool=>tool.first===earliest);
+    add(kind==='model'?'firstModel':'firstHarness',first.length?first.map(tool=>tool.name).join(' · '):null,first.length?human(iso(earliest)):null);
   }
 }
 function renderCategories() {
